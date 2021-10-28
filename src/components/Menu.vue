@@ -5,6 +5,8 @@
     class="el-menu-vertical-demo"
     default-active="2"
     text-color="#fff"
+    :unique-opened="true"
+    :router="true"
   >
     <!--公司logo 点击跳转吉埃思官网-->
     <el-menu-item index="1" @click="handleCompanyClick">
@@ -14,9 +16,9 @@
 
     <!--功能路由-->
     <el-sub-menu
-      v-for="(routerGroup, group_index) in routerGroups"
-      :key="group_index"
-      :index="`${group_index + 2}`"
+      v-for="(routerGroup, index_group) in routerGroups"
+      :key="index_group"
+      :index="`${index_group + 2}`"
     >
       <template #title>
         <i :class="routerGroup.title.icon"></i>
@@ -26,8 +28,7 @@
       <el-menu-item
         v-for="(item, index_item) in routerGroup.items"
         :key="index_item"
-        :index="`${group_index + 2}-${index_item + 1}`"
-        @click="() => router.push(item.href)"
+        :index="item.href"
       >
         {{ item.name }}
       </el-menu-item>
@@ -36,10 +37,6 @@
 </template>
 
 <script setup lang="ts">
-
-import { useRouter } from 'vue-router'
-
-const router = useRouter();
 
 interface RouterGroup {
   title: RouterGroupTitle,
@@ -71,15 +68,15 @@ const routerGroups: Array<RouterGroup> = [{
       href: "/1"
     },
     {
-      name: "天地图",
+      name: "自定义",
       href: "/2"
     },
     {
       name: "mapbox",
       href: "/3"
-    },
+    }, 
     {
-      name: "自定义",
+      name: "3D",
       href: "/4"
     }
   ]
@@ -87,7 +84,6 @@ const routerGroups: Array<RouterGroup> = [{
   title: {
     name: "编辑功能",
     icon: "el-icon-edit"
-
   },
   items: [
     {
@@ -96,7 +92,7 @@ const routerGroups: Array<RouterGroup> = [{
     },
     {
       name: "顶点工具",
-      href: "/mark"
+      href: "/mirror"
     }
   ]
 }]

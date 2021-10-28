@@ -33,7 +33,7 @@ class BaiduImageryProvider {
   _tilingScheme:WebMercatorTilingScheme;
   _rectangle:Rectangle;
   _credit:any;
-  _token:string;
+  _token?:string;
   _style:string;
 
   constructor(options:BaiduImageryProviderConstructorOptions) {

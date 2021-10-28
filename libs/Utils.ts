@@ -8,7 +8,6 @@ import { MapboxStyleImageryProvider, Viewer } from "cesium";
  * @return {*}  {Viewer}
  */
 export function createViewer(containerName: string): Viewer {
-    //Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwOWQ2ZDgwOS04MjVjLTQ4YjctYjE4Zi1lNWY4NTNhMzk0ODUiLCJpZCI6MjA0NjYsImlhdCI6MTYwNTY4NTg0OH0.Zx1gYWps3on-BqFlWwGW1BxKlkiiDfyjwRkCy8TJb1o";
     let viewer = new Viewer(containerName, {
         animation: false,    //左下角的动画仪表盘
         baseLayerPicker: false,  //右上角的图层选择按钮
@@ -25,17 +24,6 @@ export function createViewer(containerName: string): Viewer {
     })
 
     viewer.scene.skyBox.show = false;
-    viewer.imageryLayers.removeAll();
-
-    let layer = new MapboxStyleImageryProvider({
-        url: 'https://api.mapbox.com/styles/v1',
-        username: 'cocainecoder',
-        styleId: 'cktp5pvhk1x3a17jqphiinsle',
-        accessToken: 'pk.eyJ1IjoiY29jYWluZWNvZGVyIiwiYSI6ImNrdHA1YjlleDBqYTEzMm85bTBrOWE0aXMifQ.J8k3R1QBqh3pyoZi_5Yx9w',
-        scaleFactor: true
-    });
-    viewer.imageryLayers.addImageryProvider(layer);
-
     return viewer;
 }
 

@@ -9,10 +9,9 @@ import VertexTool from './views/VertexTool.vue';
 import Weather from './views/Weather.vue';
 
 const routes: Array<RouteRecordRaw> = [
-  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/0' },
   {
     path: '/:type',
-    name: "Home",
+    name: "Map",
     component: Map,
   },
   {
@@ -44,7 +43,8 @@ const routes: Array<RouteRecordRaw> = [
     path: '/weather',
     name: "Weather",
     component: Weather,
-  }
+  },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/0' },
 ]
 
 

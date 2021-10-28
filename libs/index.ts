@@ -7,6 +7,8 @@ import EntityPicker from './EntityPicker';
 import Thinning from './Thinning';
 import VertexTool from './VertexTool';
 import { createViewer, removeEntityByName, addArrayListener } from './Utils';
+import AmapImageryProvider from './imagery/provider/AmapImageryProvider';
+import BaiduImageryProvider from './imagery/provider/BaiduImageryProvider';
 
 import {
     ShapeType,
@@ -33,6 +35,9 @@ export {
     CursorStyle,
     SpaceType,
     WeatherType,
+
+    AmapImageryProvider,
+    BaiduImageryProvider
 };
 
 export type { MarkStyle };

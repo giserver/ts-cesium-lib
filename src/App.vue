@@ -7,21 +7,6 @@
       <router-view />
     </el-main>
   </el-container>
-
-  <!-- <el-container>
-    <el-aside>
-      <router-link :to="{ name: 'Home' }">Home</router-link>
-      <router-link :to="{ name: 'Mark' }">Mark</router-link>
-      <router-link :to="{ name: 'Mirror' }">Mirror</router-link>
-      <router-link :to="{ name: 'SelfSpin' }">SelfSpin</router-link>
-      <router-link :to="{ name: 'Thinning' }">Thinning</router-link>
-      <router-link :to="{ name: 'VertexTool' }">VertexTool</router-link>
-      <router-link :to="{ name: 'Weather' }">Weather</router-link>
-    </el-aside>
-    <el-main>
-      
-    </el-main>
-  </el-container> -->
 </template>
 
 <script setup lang="ts">

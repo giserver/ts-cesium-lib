@@ -15,23 +15,23 @@ type CrsType = 'WGS84' | 'SELF';
 
 type AmapImageryProviderConstructorOptions = {
   style: AmapImageryProviderStyle,
-  crs?:CrsType,
-  base:UrlTemplateImageryProvider.ConstructorOptions
+  crs?:CrsType
 }
 
 class AmapImageryProvider extends UrlTemplateImageryProvider {
   constructor(options:AmapImageryProviderConstructorOptions) {
-    options.base['url'] =
-      options.style === 'img'
+    let base:UrlTemplateImageryProvider.ConstructorOptions = {url:""};
+    base.url = options.style === 'img'
         ? IMG_URL
-        : options.style === 'cva'
-        ? CVA_URL
-        : ELEC_URL
-    options.base['subdomains'] = options.base.subdomains || ['01', '02', '03', '04']
+        : options.style === 'cva' ? CVA_URL : ELEC_URL;
+    
+    base.subdomains = base.subdomains || ['01', '02', '03', '04'];
+
     if (options.crs === 'WGS84') {
-      options.base['tilingScheme'] = new AmapMercatorTilingScheme()
+      base.tilingScheme = new AmapMercatorTilingScheme();
     }
-    super(options.base)
+
+    super(base);
   }
 }
 
