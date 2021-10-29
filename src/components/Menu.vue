@@ -60,24 +60,12 @@ const routerGroups: Array<RouterGroup> = [{
   },
   items: [
     {
-      name: "高德",
-      href: "/0"
+      name: "底图加载",
+      href: "/map"
     },
     {
-      name: "百度",
-      href: "/1"
-    },
-    {
-      name: "自定义",
-      href: "/2"
-    },
-    {
-      name: "mapbox",
-      href: "/3"
-    }, 
-    {
-      name: "3D",
-      href: "/4"
+      name:"双屏对比",
+      href: '/mirror'
     }
   ]
 }, {
@@ -92,7 +80,7 @@ const routerGroups: Array<RouterGroup> = [{
     },
     {
       name: "顶点工具",
-      href: "/mirror"
+      href: "/vertextool"
     }
   ]
 }]

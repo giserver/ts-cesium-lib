@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
+import Home from './views/Home.vue'
 import Map from './views/Map.vue';
 import Mark from './views/Mark.vue';
 import Mirror from './views/Mirror.vue';
@@ -10,7 +11,12 @@ import Weather from './views/Weather.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/:type',
+    path: '/',
+    name: 'Home',
+    component: Home,
+  },
+  {
+    path: '/map',
     name: "Map",
     component: Map,
   },
@@ -44,7 +50,7 @@ const routes: Array<RouteRecordRaw> = [
     name: "Weather",
     component: Weather,
   },
-  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/0' },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/' },
 ]
 
 

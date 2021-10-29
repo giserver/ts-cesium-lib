@@ -1,56 +1,35 @@
-import {WebMercatorTilingScheme,Cartesian2,ImageryProvider,DeveloperError, Rectangle} from 'cesium'
-
+import { WebMercatorTilingScheme, Cartesian2, ImageryProvider, DeveloperError, Rectangle } from 'cesium'
 import BaiduMercatorTilingScheme from '../tiling-scheme/BaiduMecatorTilingScheme'
-
-const IMG_URL =
-  'http://shangetu{s}.map.bdimg.com/it/u=x={x};y={y};z={z};v=009;type=sate&fm=46'
-
-const VEC_URL =
-  'http://online{s}.map.bdimg.com/onlinelabel/?qt=tile&x={x}&y={y}&z={z}&styles=pl&scaler=1&p=1'
-
-const CUSTOM_URL =
-  'http://api{s}.map.bdimg.com/customimage/tile?&x={x}&y={y}&z={z}&scale=1&customid={style}'
-
-const TRAFFIC_URL =
-  'http://its.map.baidu.com:8002/traffic/TrafficTileService?time={time}&label={labelStyle}&v=016&level={z}&x={x}&y={y}&scaler=2'
-
-type BaiduImageryProviderStyle = 'img'|'vec'|'custom'|'traffic';
+import { CustomProviderStyle, BMAP_IMG_URL, BMAP_ELEC_URL,CrsType } from '../ProviderStyle';
 
 type BaiduImageryProviderConstructorOptions = {
-  style?:BaiduImageryProviderStyle,
-  labelStyle?:string,
-  crs?:string,
+  style: CustomProviderStyle,
+  crs?: CrsType,
+  labelStyle?: string,
 }
 
 class BaiduImageryProvider {
-  
-  _url : string;
-  _labelStyle:string;
-  _tileWidth:number;
-  _tileHeight:number;
-  _maximumLevel:number;
-  _crs:string;
-  _tilingScheme:WebMercatorTilingScheme;
-  _rectangle:Rectangle;
-  _credit:any;
-  _token?:string;
-  _style:string;
 
-  constructor(options:BaiduImageryProviderConstructorOptions) {
-    this._url =
-      options.style === 'img'
-        ? IMG_URL
-        : options.style === 'vec'
-        ? VEC_URL
-        : options.style === 'traffic'
-        ? TRAFFIC_URL
-        : CUSTOM_URL
+  _url: string;
+  _labelStyle: string;
+  _tileWidth: number;
+  _tileHeight: number;
+  _maximumLevel: number;
+  _crs: string;
+  _tilingScheme: WebMercatorTilingScheme;
+  _rectangle: Rectangle;
+  _credit: any;
+  _token?: string;
+  _style: string;
+
+  constructor(options: BaiduImageryProviderConstructorOptions) {
+    this._url = options.style === 'img' ? BMAP_IMG_URL : BMAP_ELEC_URL;
     this._labelStyle = options.labelStyle || 'web2D'
     this._tileWidth = 256
     this._tileHeight = 256
     this._maximumLevel = 18
-    this._crs = options.crs || 'BD09'
-    if (options.crs === 'WGS84') {
+    this._crs = options.crs === 'SELF' ?  'BD09' : 'WGS84'
+    if (options.crs !== 'SELF') {
       let resolutions = []
       for (let i = 0; i < 19; i++) {
         resolutions[i] = 256 * Math.pow(2, 18 - i)
@@ -152,7 +131,7 @@ class BaiduImageryProvider {
     return true
   }
 
-  getTileCredits(x: number, y: number, level:number) {}
+  getTileCredits(x: number, y: number, level: number) { }
 
   /**
    * Request Image
@@ -161,7 +140,7 @@ class BaiduImageryProvider {
    * @param level
    * @returns {Promise<HTMLImageElement | HTMLCanvasElement>}
    */
-  requestImage(x:number, y:number, level:number) {
+  requestImage(x: number, y: number, level: number) {
     if (!this.ready) {
       throw new DeveloperError(
         'requestImage must not be called before the imagery provider is ready.'

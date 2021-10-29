@@ -10,6 +10,8 @@ import { createViewer, removeEntityByName, addArrayListener } from './Utils';
 import AmapImageryProvider from './imagery/provider/AmapImageryProvider';
 import BaiduImageryProvider from './imagery/provider/BaiduImageryProvider';
 
+import { CustomProviderStyle, CrsType } from './imagery/ProviderStyle'
+
 import {
     ShapeType,
     CursorStyle,
@@ -40,4 +42,4 @@ export {
     BaiduImageryProvider
 };
 
-export type { MarkStyle };
+export type { MarkStyle, CustomProviderStyle, CrsType };
