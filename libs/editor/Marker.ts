@@ -1,5 +1,5 @@
 import { BoundingSphere, CallbackProperty, Cartesian3, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, removeEntityByName, addArrayListener, ShapeType } from "..";
+import { FeatureBase, removeEntityByName, addArrayListener, ShapeType, MarkStyle } from "..";
 import { calArea, calLength, createLabel } from "../Utils";
 
 const MEASURE_DEFINE_NAME = "MEASURE_DEFINE_NAME"
@@ -15,30 +15,31 @@ export default class Marker extends FeatureBase {
     private currentType: ShapeType = 'Point';
 
     /**
-     * 标记实体名称 Marker内部维护，外部设置也不会生效
+     * 标记样式
+     *
+     * @type {MarkStyle}
+     * @memberof Marker
      */
-    public entityName: string = "";
-
-    point_Color = "#ffffff";
-    point_PixelSize = 5;
-    line_Width = 5;
-    line_MaterialColor = "#ff0000";
-    line_DepthFailMaterialColor = "#0000ff";
-    polygon_Outline = false;
-    polygon_OutlineWidth = 1;
-    polygon_OutlineColor = "#90EE90";
-    polygon_OutlineColor_Alpha = 1;
-    polygon_MaterialColor = "#ff0000";
-    polygon_MaterialColor_Alpha = 0.2;
-    measureEnable = false;
+    public readonly style: MarkStyle;
 
     constructor(viewer: Viewer, callback?: (entity: Entity) => void) {
         super(viewer);
         this.callback = callback;
 
-        Object.defineProperty(this, 'entityName', {
-            get: () => this.measureEnable ? MEASURE_DEFINE_NAME : ""
-        })
+        this.style = {
+            point_Color: "#ffffff",
+            point_PixelSize: 5,
+            line_Width: 5,
+            line_MaterialColor: "#ff0000",
+            line_DepthFailMaterialColor: "#0000ff",
+            polygon_Outline: false,
+            polygon_OutlineWidth: 1,
+            polygon_OutlineColor: "#90EE90",
+            polygon_OutlineColor_Alpha: 1,
+            polygon_MaterialColor: "#ff0000",
+            polygon_MaterialColor_Alpha: 0.2,
+            measureEnable: false,
+        };
     }
 
     /**
@@ -93,7 +94,7 @@ export default class Marker extends FeatureBase {
                 }
                 activeShapePoints.push(position);
                 markPoints.push(new Entity({
-                    name: this.entityName,
+                    name: this.getEntityName(),
                     position: new ConstantPositionProperty(position)
                 }))
             }
@@ -171,6 +172,17 @@ export default class Marker extends FeatureBase {
     }
 
     /**
+     * 获取实体名称
+     *
+     * @private
+     * @return {*}  {string}
+     * @memberof Marker
+     */
+    private getEntityName():string{
+        return this.style.measureEnable ? MEASURE_DEFINE_NAME : "";
+    }
+
+    /**
      * 绘制形状
      *
      * @private
@@ -181,41 +193,42 @@ export default class Marker extends FeatureBase {
      * @memberof Mark
      */
     private drawShape(shapetype: ShapeType, position: any): Entity {
+        const entityName = this.getEntityName();
         switch (shapetype) {
             case 'Point':
                 return this.viewer.entities.add({
-                    name: this.entityName,
+                    name: entityName,
                     position: position,
                     point: {
-                        color: Color.fromCssColorString(this.point_Color),
-                        pixelSize: this.point_PixelSize,
+                        color: Color.fromCssColorString(this.style.point_Color),
+                        pixelSize: this.style.point_PixelSize,
                         heightReference: HeightReference.CLAMP_TO_GROUND
                     }
                 });
             case 'Line':
                 return this.viewer.entities.add({
-                    name: this.entityName,
+                    name: entityName,
                     polyline: {
                         positions: position,
                         clampToGround: true,
-                        width: this.line_Width,
+                        width: this.style.line_Width,
                         material: new PolylineGlowMaterialProperty({
-                            color: Color.fromCssColorString(this.line_MaterialColor)
+                            color: Color.fromCssColorString(this.style.line_MaterialColor)
                         }),
                         depthFailMaterial: new PolylineGlowMaterialProperty({
-                            color: Color.fromCssColorString(this.line_DepthFailMaterialColor)
+                            color: Color.fromCssColorString(this.style.line_DepthFailMaterialColor)
                         }),
                     }
                 });
             case 'Polygon':
                 var entity = this.viewer.entities.add({
-                    name: this.entityName,
+                    name: entityName,
                     polygon: {
                         hierarchy: position,
-                        material: Color.fromCssColorString(this.polygon_MaterialColor).withAlpha(this.polygon_MaterialColor_Alpha),
-                        outline: this.polygon_Outline,
-                        outlineColor: Color.fromCssColorString(this.polygon_OutlineColor).withAlpha(this.polygon_OutlineColor_Alpha),
-                        outlineWidth: this.polygon_OutlineWidth,
+                        material: Color.fromCssColorString(this.style.polygon_MaterialColor).withAlpha(this.style.polygon_MaterialColor_Alpha),
+                        outline: this.style.polygon_Outline,
+                        outlineColor: Color.fromCssColorString(this.style.polygon_OutlineColor).withAlpha(this.style.polygon_OutlineColor_Alpha),
+                        outlineWidth: this.style.polygon_OutlineWidth,
                     }
                 });
 
@@ -225,7 +238,7 @@ export default class Marker extends FeatureBase {
                     polylinePositaions = polylinePositaions.concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
 
                     //添加测量面积
-                    if (this.measureEnable) {
+                    if (this.style.measureEnable) {
                         if (polylinePositaions.length < 3) {
                             entity.position = undefined;
                         }
@@ -262,7 +275,7 @@ export default class Marker extends FeatureBase {
 
         //添加点事件
         addArrayListener(markPoints, "push", (array, args) => {
-            if (this.measureEnable && this.currentType === 'Line') {
+            if (this.style.measureEnable && this.currentType === 'Line') {
                 let entity = args[0] as Entity;
                 let length = 0;
 
@@ -271,8 +284,8 @@ export default class Marker extends FeatureBase {
                         let currentPoint = array[i].position?.getValue(JulianDate.now());
 
                         //获取下一个点 当i为数组最后一个下标则设置为push的参数
-                        let nextPoint = i === array.length - 1 ? 
-                            entity.position?.getValue(JulianDate.now()) : 
+                        let nextPoint = i === array.length - 1 ?
+                            entity.position?.getValue(JulianDate.now()) :
                             array[i + 1].position?.getValue(JulianDate.now());
 
                         if (currentPoint !== undefined && nextPoint !== undefined)
@@ -287,7 +300,7 @@ export default class Marker extends FeatureBase {
 
         //删除点事件
         addArrayListener(markPoints, "pop", (array, args) => {
-            if (this.measureEnable && this.currentType === 'Line')
+            if (this.style.measureEnable && this.currentType === 'Line')
                 this.viewer.entities.remove(array[array.length - 1]);
         })
     }

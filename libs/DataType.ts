@@ -19,19 +19,19 @@ export type SpaceType = 'D3' | 'D2' | 'H';
 export type WeatherType = 'None' | 'Snow' | 'Rain' | 'Foggy';
 
 export interface MarkStyle {
-   point_PixelSize?: number;
-   point_Color?: string;
+   point_PixelSize: number;
+   point_Color: string;
 
-   line_Width?: number;
-   line_MaterialColor?: string;
-   line_DepthFailMaterialColor?: string;
+   line_Width: number;
+   line_MaterialColor: string;
+   line_DepthFailMaterialColor: string;
 
-   polygon_MaterialColor?: string;
-   polygon_MaterialColor_Alpha?: number;
-   polygon_Outline?: boolean;
-   polygon_OutlineColor?: string;
-   polygon_OutlineColor_Alpha?: number;
-   polygon_OutlineWidth?: number;
+   polygon_MaterialColor: string;
+   polygon_MaterialColor_Alpha: number;
+   polygon_Outline: boolean;
+   polygon_OutlineColor: string;
+   polygon_OutlineColor_Alpha: number;
+   polygon_OutlineWidth: number;
 
-   measureEnable?: boolean;
+   measureEnable: boolean;
 }
