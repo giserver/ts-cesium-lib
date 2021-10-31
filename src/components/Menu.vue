@@ -29,61 +29,14 @@
         v-for="(item, index_item) in routerGroup.items"
         :key="index_item"
         :index="item.href"
-      >
-        {{ item.name }}
-      </el-menu-item>
+      >{{ item.name }}</el-menu-item>
     </el-sub-menu>
   </el-menu>
 </template>
 
 <script setup lang="ts">
 
-interface RouterGroup {
-  title: RouterGroupTitle,
-  items: Array<RouterGroupItem>
-}
-
-interface RouterGroupTitle {
-  name: string;
-  icon: string;
-}
-
-interface RouterGroupItem {
-  name: string;
-  href: string;
-}
-
-const routerGroups: Array<RouterGroup> = [{
-  title: {
-    name: "地图加载",
-    icon: "el-icon-picture"
-  },
-  items: [
-    {
-      name: "底图加载",
-      href: "/map"
-    },
-    {
-      name:"双屏对比",
-      href: '/mirror'
-    }
-  ]
-}, {
-  title: {
-    name: "编辑功能",
-    icon: "el-icon-edit"
-  },
-  items: [
-    {
-      name: "点线面绘制",
-      href: "/mark"
-    },
-    {
-      name: "顶点工具",
-      href: "/vertextool"
-    }
-  ]
-}]
+import {routerGroups} from '../contracts/UIData'
 
 const handleCompanyClick = () => {
   window.open("http://www.szjiaisi.com", "_blank")

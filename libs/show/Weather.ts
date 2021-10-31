@@ -1,5 +1,5 @@
 import {PostProcessStage, PostProcessStageLibrary, Viewer } from "cesium";
-import {FeatureBase,WeatherType} from ".";
+import {FeatureBase} from "..";
 
 const Snow = `
 uniform sampler2D colorTexture; //输入的场景渲染照片
@@ -108,19 +108,19 @@ export default class Weather extends FeatureBase {
      * @return {*}  {void}
      * @memberof Weather
      */
-    add(type: WeatherType): void {
+    add(type: any): void {
         const scene = this.viewer.scene;
 
         let weather: string | undefined;
 
         switch (type) {
-            case WeatherType.Rain:
+            case 'Rain':
                 weather = Rain;
                 break;
-            case WeatherType.Snow:
+            case 'Snow':
                 weather = Snow;
                 break;
-            case WeatherType.Foggy:
+            case 'Foggy':
                 break;
         }
 
@@ -128,7 +128,7 @@ export default class Weather extends FeatureBase {
         if (weather === undefined) return;
 
         this.currentState = new PostProcessStage({
-            name: `czm_${WeatherType[type].toLowerCase()}`,
+            name: `czm_${type}`,
             fragmentShader: weather
         })
 

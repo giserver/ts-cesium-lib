@@ -23,6 +23,7 @@ body {
 .el-aside {
   background-color: #d3dce6;
   max-width: 200px;
+  /* display: none; */
 }
 
 .el-main {

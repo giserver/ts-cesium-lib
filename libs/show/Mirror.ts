@@ -1,5 +1,5 @@
 import { Camera, Viewer } from "cesium";
-import { createViewer, Mark } from ".";
+import { createViewer, Mark } from "..";
 
 /**
  * 镜像功能，可以实现双屏模式

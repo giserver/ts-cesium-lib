@@ -1,4 +1,5 @@
-import { MapboxStyleImageryProvider, Viewer } from "cesium";
+import { Cartesian3, Color, LabelGraphics, Viewer } from "cesium";
+import { SpaceType } from ".";
 
 /**
  * 创建 viewer
@@ -42,15 +43,85 @@ export function removeEntityByName(viewer: Viewer, name: string) {
 }
 
 /**
-  * 数组添加方法监听
+* 创建cesium lable对象 ，统一样式
+*
+* @private
+* @param {string} text lable显示文字
+* @return {*}
+* @memberof Mark
+*/
+export function createLabel(text: string): LabelGraphics {
+    return new LabelGraphics({
+        text: text,
+        font: '10px Consolas',
+        showBackground: true, // 是否显示背景颜色
+        backgroundColor: new Color(0, 0, 0, 0.5),
+        disableDepthTestDistance: Number.POSITIVE_INFINITY
+    })
+}
+
+
+/**
+ * 计算面积 todo : 修改points类型
+ *
+ * @protected
+ * @param {Cartesian3[]} points 多边形点
+ * @return {number}  面积
+ * @memberof FeatureBase
+ */
+export function calArea(points: Cartesian3[]): number {
+    let area = 0;
+
+    if (points.length > 2) {
+        for (let i = 0; i < points.length; i++) {
+
+            let currentPoint = points[i];
+            let nextPoint = i == points.length - 1 ? points[0] : points[i + 1];
+
+            area += currentPoint.x * nextPoint.y - currentPoint.y * nextPoint.x;
+        }
+    }
+
+    return Math.abs(area);
+}
+
+
+ /**
+  * 计算线段长度 (根据空间类型)
   *
-  * @private
-  * @template T any
-  * @param {Array<T>} array 数组
-  * @param {arrayMethodName} methodName 方法类型
-  * @param {(value: T) => void} callback
-  * @memberof Mark
+  * @export
+  * @param {[Cartesian3, Cartesian3]} segmentPoints
+  * @param {SpaceType} [spaceType='D3']
+  * @return {*}  {number}
   */
+ export function calLength(segmentPoints: [Cartesian3, Cartesian3], spaceType: SpaceType = 'D3'): number {
+
+    let start = segmentPoints[0];
+    let end = segmentPoints[1];
+
+    if (spaceType == 'H')
+        return Math.abs(start.z - end.z);
+
+    let temp = Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2);
+
+    if (spaceType == 'D3')
+        temp += Math.pow(start.z - end.z, 2);
+
+    return Math.sqrt(temp);
+}
+
+
+
+/**
+ * 数组添加方法监听
+ *
+ * @private
+ * @template T any
+ * @param {Array<T>} array 数组
+ * @param {arrayMethodName} methodName 方法类型
+ * @param {(value: T) => void} callback
+ * @memberof Mark
+ */
 export function addArrayListener<T>(array: Array<T>, methodName: keyof T[], callback: (array: Array<T>, args: IArguments) => void) {
 
     if (methodName === "length") return;

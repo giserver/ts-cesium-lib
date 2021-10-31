@@ -9,40 +9,31 @@
         @change="changeMark"
     >
         <el-radio-button
-            v-for="(option,index) in markOptions"
+            v-for="(option,index) in markerRadioOptions"
             :key="index"
-            :label="option.type"
+            :label="option.label"
         >{{ option.name }}</el-radio-button>
     </el-radio-group>
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from 'vue';
-import { Mark, ShapeType } from '../../libs';
+import { ref } from 'vue';
+import { Marker, ShapeType } from '../../libs';
+import { markerRadioOptions } from '../contracts/UIData'
 
 const props = defineProps({
-    marker: Mark
+    marker: Marker
 })
 
-const shapeType = ref(ShapeType.Point);
+const shapeType = ref<ShapeType>('Point');
 const todraw = ref(false);
 
-const markOptions: Array<{ type: ShapeType, name: string }> = [{
-    type: ShapeType.Point,
-    name: '点'
-}, {
-    type: ShapeType.Line,
-    name: '线'
-}, {
-    type: ShapeType.Polygon,
-    name: '面'
-}]
-
 function changeMark() {
+
     const marker = props.marker;
     if (!marker) return;
-    const type = shapeType.value;
 
+    const type = shapeType.value;
     if (todraw.value) {
         marker.start(type);
     } else {

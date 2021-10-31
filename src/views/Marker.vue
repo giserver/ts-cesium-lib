@@ -9,16 +9,16 @@
 <script setup lang="ts">
 import { Viewer } from 'cesium';
 import { onMounted, ref } from 'vue'
-import { createViewer, Mark } from '../../libs';
+import { createViewer, Marker } from '../../libs';
 import DrawTool from '../components/DrawTool.vue';
 
 const containerName = "container"
 const viewer = ref<Viewer>();
-const marker = ref<Mark>();
+const marker = ref<Marker>();
 
 onMounted(()=>{
     viewer.value = createViewer(containerName);
-    marker.value = new Mark(viewer.value);
+    marker.value = new Marker(viewer.value);
 })
 
 </script>

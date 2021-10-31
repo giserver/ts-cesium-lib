@@ -1,97 +1,24 @@
 /**
- * 标记类型
- *
- * @enum {number}
+ * 形状 点 | 线 | 面
  */
-enum ShapeType {
-
-   /**
-    * 点
-    */
-   Point,
-
-
-   /**
-    * 线
-    */
-   Line,
-
-
-   /**
-    * 面
-    */
-   Polygon
-
-}
+export type ShapeType = 'Point' | 'Line' | 'Polygon';
 
 /**
- *  指针样式
- *
- * @enum {number}
+ * 指针类型 默认 | 十字
  */
-enum CursorStyle {
-   /**
-    * 默认样式
-    */
-   Default,
-
-
-   /**
-    * 十字样式
-    */
-   CrossHair,
-}
+export type CursorStyle = 'Default' | 'CrossHair';
 
 /**
- * 空间类型  
- *
- * @enum {number}
+ * 空间类型 三维 | 二维 | 高
  */
-enum SpaceType {
-
-   /**
-    * 3D -> xyz
-    */
-   D3,
-
-   /**
-    * 2D -> xy
-    */
-   D2,
-
-   /**
-    * 高 -> z
-    */
-   H
-}
+export type SpaceType = 'D3' | 'D2' | 'H';
 
 /**
- * 天气类型
- *
- * @enum {number}
+ * 天气类型 无 | 雪 | 雨 | 雾
  */
-enum WeatherType {
+export type WeatherType = 'None' | 'Snow' | 'Rain' | 'Foggy';
 
-   /**
-    * 无
-    */
-   None,
-   /**
-    * 雪天
-    */
-   Snow,
-   /**
-    * 雨天
-    */
-   Rain,
-
-   /**
-    * 雾天
-    */
-   Foggy,
-}
-
-interface MarkStyle{
+export interface MarkStyle {
    point_PixelSize?: number;
    point_Color?: string;
 
@@ -106,14 +33,5 @@ interface MarkStyle{
    polygon_OutlineColor_Alpha?: number;
    polygon_OutlineWidth?: number;
 
-   measureEnable?:boolean;
+   measureEnable?: boolean;
 }
-
-export {
-   ShapeType,
-   CursorStyle,
-   SpaceType,
-   WeatherType,
-};
-
-export type {MarkStyle};

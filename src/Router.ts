@@ -2,12 +2,13 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
 import Home from './views/Home.vue'
 import Map from './views/Map.vue';
-import Mark from './views/Mark.vue';
+import Marker from './views/Marker.vue';
 import Mirror from './views/Mirror.vue';
 import SelfSpin from './views/SelfSpin.vue';
 import Thinning from './views/Thinning.vue';
 import VertexTool from './views/VertexTool.vue';
 import Weather from './views/Weather.vue';
+import DataShow from './views/DataShow.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -21,9 +22,9 @@ const routes: Array<RouteRecordRaw> = [
     component: Map,
   },
   {
-    path: '/mark',
-    name: "Mark",
-    component: Mark,
+    path: '/marker',
+    name: "Marker",
+    component: Marker,
   },
   {
     path: '/mirror',
@@ -49,6 +50,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/weather',
     name: "Weather",
     component: Weather,
+  },
+  {
+    path:'/datashow',
+    name:"DataShow",
+    component:DataShow
   },
   { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/' },
 ]

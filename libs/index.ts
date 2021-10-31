@@ -1,16 +1,20 @@
 import FeatureBase from './FeatureBase';
-import Mark from './Mark';
-import Weather from './Weather';
-import SelfSpin from './SelfSpin';
-import Mirror from './Mirror';
-import EntityPicker from './EntityPicker';
-import Thinning from './Thinning';
-import VertexTool from './VertexTool';
-import { createViewer, removeEntityByName, addArrayListener } from './Utils';
+
+import Marker from './editor/Marker';
+import VertexTool from './editor/VertexTool';
+
+import Mirror from './show/Mirror';
+import Weather from './show/Weather';
+import SelfSpin from './show/SelfSpin';
+import EntityPicker from './show/EntityPicker';
+import Thinning from './show/Thinning';
+
+import Popup from './show/Popup';
 import AmapImageryProvider from './imagery/provider/AmapImageryProvider';
 import BaiduImageryProvider from './imagery/provider/BaiduImageryProvider';
-
 import { CustomProviderStyle, CrsType } from './imagery/ProviderStyle'
+
+import { createViewer, removeEntityByName, addArrayListener } from './Utils';
 
 import {
     ShapeType,
@@ -22,7 +26,7 @@ import {
 
 export {
     FeatureBase,
-    Mark,
+    Marker,
     Weather,
     Mirror,
     SelfSpin,
@@ -32,14 +36,17 @@ export {
     addArrayListener,
     Thinning,
     VertexTool,
-
-    ShapeType,
-    CursorStyle,
-    SpaceType,
-    WeatherType,
-
+    Popup,
     AmapImageryProvider,
     BaiduImageryProvider
 };
 
-export type { MarkStyle, CustomProviderStyle, CrsType };
+export type {
+    ShapeType,
+    CursorStyle,
+    SpaceType,
+    WeatherType,
+    MarkStyle,
+    CrsType,
+    CustomProviderStyle
+}

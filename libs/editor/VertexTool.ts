@@ -1,5 +1,5 @@
-import { CallbackProperty, Cartesian3, Color, defaultValue, Entity, HeightReference, JulianDate, PolygonHierarchy, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from "cesium";
-import FeatureBase from "./FeatureBase";
+import { CallbackProperty, Cartesian3, Color, defaultValue, Entity, JulianDate, PolygonHierarchy, ScreenSpaceEventType, Viewer } from "cesium";
+import FeatureBase from "../FeatureBase";
 
 type removeEntityType = 'mask' | 'vertex';
 
@@ -258,9 +258,5 @@ export default class VertexTool extends FeatureBase {
 
     stop() {
         this.viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
-    }
-
-    clear(): void {
-        this.stop();
     }
 }

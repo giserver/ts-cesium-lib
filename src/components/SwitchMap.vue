@@ -1,18 +1,17 @@
 <template>
   <el-switch v-model="isElec" inactive-text="卫星影像" active-text="电子地图" @click="changeMap"></el-switch>
   <el-radio-group v-model="mapProvider" @change="changeMap">
-    <el-row v-for="(control,index) in mapControls">
-      <el-radio :key="index" :label="control.provider">{{ control.name }}</el-radio>
+    <el-row v-for="(option,index) in mapRadioOptions" :key="index">
+      <el-radio :label="option.label">{{ option.name }}</el-radio>
     </el-row>
   </el-radio-group>
 </template>
 
 <script setup lang="ts">
 import { Viewer, UrlTemplateImageryProvider, Cesium3DTileset, MapboxStyleImageryProvider, Cartesian3 } from 'cesium';
-import { defineProps, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { AmapImageryProvider, BaiduImageryProvider, CustomProviderStyle } from '../../libs';
-
-type MapProvider = 'amap' | 'bdmap' | 'custom' | 'mapbox' | '3dtiles';
+import { mapRadioOptions, MapProvider } from '../contracts/UIData'
 
 const props = defineProps({
   viewer: Viewer,
@@ -25,29 +24,6 @@ onMounted(() => {
   if (props.viewer)
     changeMap();
 })
-
-const mapControls: Array<{ name: string, provider: MapProvider }> = [
-  {
-    name: "高德地图",
-    provider: "amap",
-  },
-  {
-    name: "百度地图",
-    provider: "bdmap",
-  },
-  {
-    name: "自定义",
-    provider: "custom",
-  },
-  {
-    name: "倾斜摄影",
-    provider: "3dtiles"
-  },
-  {
-    name: "mapbox",
-    provider: "mapbox",
-  },
-]
 
 function changeMap() {
 

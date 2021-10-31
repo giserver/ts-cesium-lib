@@ -1,5 +1,5 @@
 import { Cartesian2, defined, EllipsoidGeodesic, Entity, JulianDate, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase } from ".";
+import { FeatureBase } from "..";
 
 /**
  * 抽稀
@@ -85,20 +85,11 @@ export default class Thinning extends FeatureBase {
      *
      * @memberof Thinning
      */
-    stop(): void {
+    clear(): void {
         if (this.pointsFunc)
             this.pointsFunc(this.viewer).forEach(entity => entity.show = true);
 
         this.viewer.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.WHEEL);
-    }
-
-    /**
-     * 清除抽稀数据
-     *
-     * @memberof Thinning
-     */
-    clear(): void {
-        stop();
 
         if (this.pointsFunc)
             this.pointsFunc = undefined;

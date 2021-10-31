@@ -1,5 +1,5 @@
 import { Cartesian3, Viewer } from "cesium";
-import FeatureBase from "./FeatureBase";
+import FeatureBase from "../FeatureBase";
 
 export default class SelfSpin extends FeatureBase {
 
