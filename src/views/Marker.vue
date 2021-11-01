@@ -1,7 +1,7 @@
 <template>
     <div :id="containerName">
         <div id="tools">
-            <DrawTool :marker="marker"></DrawTool>
+            <DrawTool v-if="marker" :marker="marker"></DrawTool>
         </div>
     </div>
 </template>
