@@ -24,13 +24,11 @@ export interface MarkStyle {
 
    line_Width: number;
    line_MaterialColor: string;
-   line_DepthFailMaterialColor: string;
 
    polygon_MaterialColor: string;
    polygon_MaterialColor_Alpha: number;
    polygon_Outline: boolean;
    polygon_OutlineColor: string;
-   polygon_OutlineColor_Alpha: number;
    polygon_OutlineWidth: number;
 
    measureEnable: boolean;

@@ -31,11 +31,9 @@ export default class Marker extends FeatureBase {
             point_PixelSize: 5,
             line_Width: 5,
             line_MaterialColor: "#ff0000",
-            line_DepthFailMaterialColor: "#0000ff",
-            polygon_Outline: false,
+            polygon_Outline: true,
             polygon_OutlineWidth: 1,
             polygon_OutlineColor: "#90EE90",
-            polygon_OutlineColor_Alpha: 1,
             polygon_MaterialColor: "#ff0000",
             polygon_MaterialColor_Alpha: 0.2,
             measureEnable: false,
@@ -178,7 +176,7 @@ export default class Marker extends FeatureBase {
      * @return {*}  {string}
      * @memberof Marker
      */
-    private getEntityName():string{
+    private getEntityName(): string {
         return this.style.measureEnable ? MEASURE_DEFINE_NAME : "";
     }
 
@@ -214,10 +212,7 @@ export default class Marker extends FeatureBase {
                         width: this.style.line_Width,
                         material: new PolylineGlowMaterialProperty({
                             color: Color.fromCssColorString(this.style.line_MaterialColor)
-                        }),
-                        depthFailMaterial: new PolylineGlowMaterialProperty({
-                            color: Color.fromCssColorString(this.style.line_DepthFailMaterialColor)
-                        }),
+                        })
                     }
                 });
             case 'Polygon':
@@ -225,10 +220,8 @@ export default class Marker extends FeatureBase {
                     name: entityName,
                     polygon: {
                         hierarchy: position,
-                        material: Color.fromCssColorString(this.style.polygon_MaterialColor).withAlpha(this.style.polygon_MaterialColor_Alpha),
-                        outline: this.style.polygon_Outline,
-                        outlineColor: Color.fromCssColorString(this.style.polygon_OutlineColor).withAlpha(this.style.polygon_OutlineColor_Alpha),
-                        outlineWidth: this.style.polygon_OutlineWidth,
+                        material: Color.fromCssColorString(this.style.polygon_MaterialColor)
+                                       .withAlpha(this.style.polygon_MaterialColor_Alpha)
                     }
                 });
 
@@ -253,12 +246,15 @@ export default class Marker extends FeatureBase {
                     return polylinePositaions;
                 }
 
-                //添加外轮廓
-                entity.polyline = new PolylineGraphics({
-                    positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
-                    width: 2.0,
-                    clampToGround: true
-                })
+                if (this.style.polygon_Outline) {
+                    //添加外轮廓
+                    entity.polyline = new PolylineGraphics({
+                        positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
+                        width: this.style.polygon_OutlineWidth,
+                        material:Color.fromCssColorString(this.style.polygon_OutlineColor),
+                        clampToGround: true
+                    })
+                }
 
                 return entity;
         }
