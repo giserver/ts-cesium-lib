@@ -1,4 +1,4 @@
-import { BoundingSphere, CallbackProperty, Cartesian3, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
+import { BoundingSphere, CallbackProperty, Cartesian3, Cesium3DTileset, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
 import { FeatureBase, removeEntityByName, addArrayListener, ShapeType, MarkStyle } from "..";
 import { calArea, calLength, createLabel } from "../Utils";
 
@@ -62,14 +62,11 @@ export default class Marker extends FeatureBase {
         //双击鼠标左键清除默认事件
         viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-        //开启地形深度检测，如果鼠标指针和点不重合，这个选项设置为true试试。
-        viewer.scene.globe.depthTestAgainstTerrain = true;
-
         //鼠标左键 event  -> 创建标记点
         handler.setInputAction(event => {
 
-            // scene.pickPosition只有在开启地形深度检测，且不使用默认地形时是准确的。
-            let position = viewer.scene.pickPosition(event.position)
+            let position = this.getPointFromWindowPoint(event.position)
+            if (!position) return;
 
             if (defined(position)) {
                 //如果标记类型为点，直接return
@@ -101,8 +98,8 @@ export default class Marker extends FeatureBase {
         //鼠标移动 event -> 移动至下一个标记点
         handler.setInputAction(event => {
             if (defined(floatingPoint)) {
-                let position = viewer.scene.pickPosition(event.endPosition);
-                if (defined(position)) {
+                let position = this.getPointFromWindowPoint(event.endPosition);
+                if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
                     activeShapePoints.pop();
@@ -117,8 +114,8 @@ export default class Marker extends FeatureBase {
             let lastEntity = activeShapePoints.pop();
             if (lastEntity !== undefined) {
                 //重置浮动点坐标
-                let position = viewer.scene.pickPosition(event.position);
-                if (defined(position)) {
+                let position = this.getPointFromWindowPoint(event.position);
+                if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
                     activeShapePoints.pop();
@@ -180,6 +177,22 @@ export default class Marker extends FeatureBase {
         return this.style.measureEnable ? MEASURE_DEFINE_NAME : "";
     }
 
+    private getPointFromWindowPoint(point: any) {
+        const viewer = this.viewer;
+        const primitives = this.viewer.scene.primitives;
+        let has3Dtiles = false;
+        for (let i = 0; i < primitives.length; i++) {
+            has3Dtiles = primitives.get(i) instanceof Cesium3DTileset;
+            if (has3Dtiles) break;
+        }
+
+        if (viewer.scene.terrainProvider.constructor.name == "EllipsoidTerrainProvider" && !has3Dtiles) {
+            return viewer.camera.pickEllipsoid(point, viewer.scene.globe.ellipsoid);
+        } else {
+            return viewer.scene.pickPosition(point);
+        }
+    }
+
     /**
      * 绘制形状
      *
@@ -221,7 +234,7 @@ export default class Marker extends FeatureBase {
                     polygon: {
                         hierarchy: position,
                         material: Color.fromCssColorString(this.style.polygon_MaterialColor)
-                                       .withAlpha(this.style.polygon_MaterialColor_Alpha)
+                            .withAlpha(this.style.polygon_MaterialColor_Alpha)
                     }
                 });
 
@@ -251,7 +264,7 @@ export default class Marker extends FeatureBase {
                     entity.polyline = new PolylineGraphics({
                         positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
                         width: this.style.polygon_OutlineWidth,
-                        material:Color.fromCssColorString(this.style.polygon_OutlineColor),
+                        material: Color.fromCssColorString(this.style.polygon_OutlineColor),
                         clampToGround: true
                     })
                 }

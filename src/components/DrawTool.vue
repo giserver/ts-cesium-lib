@@ -21,33 +21,61 @@
             <el-col :span="2">点</el-col>
             <el-col :span="3">
                 <div>颜色</div>
-                <el-color-picker v-model="style.point_Color" size="mini"/>
+                <el-color-picker v-model="style.point_Color" size="mini" />
             </el-col>
             <el-col :span="19">
                 <span>大小</span>
-                <el-slider v-model="style.point_PixelSize" :min="1" :max="15" :step="1" show-stops> </el-slider>
+                <el-slider v-model="style.point_PixelSize" :min="1" :max="15" :step="1" show-stops></el-slider>
             </el-col>
         </el-row>
-         <el-row>
+        <el-row>
             <el-col :span="2">线</el-col>
             <el-col :span="3">
                 <div>颜色</div>
-                <el-color-picker v-model="style.line_MaterialColor" size="mini"/>
+                <el-color-picker v-model="style.line_MaterialColor" size="mini" />
             </el-col>
             <el-col :span="19">
                 <span>线宽</span>
-                <el-slider v-model="style.line_Width" :min="1" :max="15" :step="1" show-stops> </el-slider>
+                <el-slider v-model="style.line_Width" :min="1" :max="15" :step="1" show-stops></el-slider>
             </el-col>
         </el-row>
-         <el-row>
+        <el-row>
             <el-col :span="2">面</el-col>
             <el-col :span="3">
                 <div>颜色</div>
-                <el-color-picker v-model="style.polygon_MaterialColor" size="mini"/>
+                <el-color-picker v-model="style.polygon_MaterialColor" size="mini" />
             </el-col>
             <el-col :span="19">
                 <span>不透明度</span>
-                <el-slider v-model="style.polygon_MaterialColor_Alpha" :min="0.1" :max="1.0" :step="0.1" show-stops> </el-slider>
+                <el-slider
+                    v-model="style.polygon_MaterialColor_Alpha"
+                    :min="0.1"
+                    :max="1.0"
+                    :step="0.1"
+                    show-stops
+                ></el-slider>
+            </el-col>
+        </el-row>
+        <el-row>
+            <el-col :span="2"></el-col>
+            <el-col :span="5">
+                <el-checkbox v-model="style.polygon_Outline">显示边框</el-checkbox>
+            </el-col>
+            <el-col :span="4">
+                <div>边框颜色</div>
+                <el-color-picker :disabled="!style.polygon_Outline" v-model="style.polygon_OutlineColor" size="mini" />
+            </el-col>
+
+            <el-col :span="13">
+                <span>边框宽度</span>
+                <el-slider
+                    :disabled="!style.polygon_Outline"
+                    v-model="style.polygon_OutlineWidth"
+                    :min="1"
+                    :max="15"
+                    :step="1"
+                    show-stops
+                ></el-slider>
             </el-col>
         </el-row>
         <el-row>
@@ -98,7 +126,7 @@ function changeMark() {
     padding-right: 5px;
 }
 
-.el-row{
+.el-row {
     margin-bottom: 30px;
 }
 </style>

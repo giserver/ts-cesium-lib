@@ -1,6 +1,6 @@
 <template>
     <div :id="containerName">
-        <div id="tools">
+        <div class="tools">
             <DrawTool v-if="marker" :marker="marker"></DrawTool>
         </div>
     </div>
@@ -28,7 +28,7 @@ onMounted(()=>{
     height:100vh;
 }
 
-#tools {
+.tools {
   position: absolute;
   z-index: 2;
   right: 0;
