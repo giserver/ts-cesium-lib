@@ -54,7 +54,6 @@ export default class VertexTool extends FeatureBase {
                 removeAuxiliaryEntity('mask');
                 removeAuxiliaryEntity('vertex');
             }
-
             if (entity) {
                 viewer.entities.remove(entity);
                 entity = undefined;
@@ -66,12 +65,16 @@ export default class VertexTool extends FeatureBase {
             let picked = viewer.scene.pick(movement.endPosition);
             if (picked) {
                 let pickedEntity = defaultValue(picked.id, picked.primitive.id) as Entity;
-                // 排除遮罩层
-                if (maskEntity && pickedEntity.id === maskEntity.id) {
-                    //删除动态节点
-                    removeAuxiliaryEntity('vertex');
-                    return;
-                }
+                // // 排除遮罩层
+                // if (maskEntity && pickedEntity.id === maskEntity.id) {
+                //     console.log("排除mask")
+                //     //删除动态节点
+                //     removeAuxiliaryEntity('vertex');
+                //     return;
+                // }
+                // console.log("qwer")
+
+                //console.log(pickedEntity);
 
                 // 排除节点
                 if (vertexEntity && pickedEntity.id === vertexEntity.id)
@@ -136,9 +139,9 @@ export default class VertexTool extends FeatureBase {
                             vertexIndex = i;
                             vertexEntity = viewer.entities.add({
                                 ellipse:{
-                                    semiMinorAxis: 15,
-                                    semiMajorAxis: 150,
-                                    material: Color.YELLOW,
+                                    semiMinorAxis: 5,
+                                    semiMajorAxis: 5,
+                                    material: Color.RED,
                                     outline:true,
                                     fill:true,
                                     outlineColor:Color.YELLOW,
