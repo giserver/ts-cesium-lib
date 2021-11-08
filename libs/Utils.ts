@@ -1,4 +1,4 @@
-import { Cartesian3, Color, LabelGraphics, Viewer } from "cesium";
+import { Cartesian3, Cesium3DTileset, Color, LabelGraphics, Viewer } from "cesium";
 import { SpaceType } from ".";
 
 /**
@@ -58,6 +58,31 @@ export function createLabel(text: string): LabelGraphics {
         backgroundColor: new Color(0, 0, 0, 0.5),
         disableDepthTestDistance: Number.POSITIVE_INFINITY
     })
+}
+
+
+
+/**
+ * 屏幕点转化为投影坐标
+ *
+ * @export
+ * @param {Viewer} viewer
+ * @param {*} point
+ * @return {*}  {(Cartesian3 | undefined)}
+ */
+export function window2Proj(viewer: Viewer,point: any): Cartesian3 | undefined {
+    const primitives = viewer.scene.primitives;
+    let has3Dtiles = false;
+    for (let i = 0; i < primitives.length; i++) {
+        has3Dtiles = primitives.get(i) instanceof Cesium3DTileset;
+        if (has3Dtiles) break;
+    }
+
+    if (viewer.scene.terrainProvider.constructor.name == "EllipsoidTerrainProvider" && !has3Dtiles) {
+        return viewer.camera.pickEllipsoid(point, viewer.scene.globe.ellipsoid);
+    } else {
+        return viewer.scene.pickPosition(point);
+    }
 }
 
 

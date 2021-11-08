@@ -130,7 +130,7 @@ export default class Popup extends FeatureBase {
             if (element) {
                 element.innerHTML = htmlElement.innerHTML;
             } else {
-                htmlElement.className = div_base;
+                htmlElement.className = `${htmlElement.className} ${div_base}`;
                 htmlElement.style.position = 'absolute';
                 htmlElement.style.zIndex = '100';
                 this.viewer.container.appendChild(htmlElement);
@@ -208,7 +208,7 @@ export default class Popup extends FeatureBase {
 
         //当cesium container的起始屏幕坐标不在0，0位置时需要手动偏移
         const startX = this.viewer.container.getBoundingClientRect().x;
-        if (element) {
+        if (element && position) {
             element.style.display = "block";
             element.style.left = `${Math.floor(position.x - element.clientWidth / 2 + startX)}px`;
             element.style.top = `${Math.floor(position.y - element.clientHeight)}px`;

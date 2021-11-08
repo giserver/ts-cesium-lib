@@ -24,12 +24,7 @@ function init(viewer: Viewer) {
             data.entities.values.forEach(entity => {
                 viewer.entities.add(entity);
             });
-
-            console.log(123);
-
-            let vertexTool = new VertexTool(viewer);
-            vertexTool.start();
-
+            
             viewer.camera.flyTo({
                 destination: Cartesian3.fromDegrees(120.42533699835855, 31.07777035267323, 1000)
             });

@@ -20,13 +20,13 @@
 </template>
 
 <script setup lang="ts">
-import { BoundingSphere, Cartesian3, GeoJsonDataSource, JulianDate, SceneTransforms, Viewer } from 'cesium';
+import { BoundingSphere, CameraEventType, Cartesian3, GeoJsonDataSource, JulianDate, KeyboardEventModifier, SceneTransforms, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from 'cesium';
 import { ref, onMounted } from 'vue';
 import { createViewer, EntityPicker, Popup } from '../../libs';
 
 const containerName = "cesium-container";
 const viewer = ref<Viewer>();
-let popup:Popup;
+let popup: Popup;
 
 const value = ref('');
 const options = ref<Array<any>>([]);
@@ -78,14 +78,14 @@ function remoteMethod(query: string) {
     loading.value = false;
 }
 
-function handleSelectChange(){
+function handleSelectChange() {
     let entity = viewer.value?.dataSources.get(0).entities.getById(value.value);
-    if(viewer.value && entity){
+    if (viewer.value && entity) {
         const element = document.createElement("div");
         element.innerHTML = parseData2Html(entity.properties?.getValue(JulianDate.now()));
         var position = BoundingSphere.fromPoints(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions).center;
-        if(position){
-            popup.show( SceneTransforms.wgs84ToWindowCoordinates(viewer.value.scene,position),element);
+        if (position) {
+            popup.show(SceneTransforms.wgs84ToWindowCoordinates(viewer.value.scene, position), element);
         }
     }
 }
