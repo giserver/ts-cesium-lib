@@ -7,15 +7,15 @@
 <script setup lang="ts">
 import { Cartesian3, GeoJsonDataSource, Viewer } from 'cesium';
 import { ref, onMounted } from 'vue';
-import { createViewer, VertexTool } from '../../libs';
+import { createViewer } from '../../libs';
 
 const containerName = "cesium-container";
-const viewer = ref<Viewer>();
+let viewer : Viewer;
 
 
 onMounted(() => {
-    viewer.value = createViewer(containerName);
-    init(viewer.value);
+    viewer = createViewer(containerName);
+    init(viewer);
 })
 
 function init(viewer: Viewer) {
@@ -24,13 +24,11 @@ function init(viewer: Viewer) {
             data.entities.values.forEach(entity => {
                 viewer.entities.add(entity);
             });
-            
-            viewer.camera.flyTo({
-                destination: Cartesian3.fromDegrees(120.42533699835855, 31.07777035267323, 1000)
-            });
         })
 
-
+    viewer.camera.flyTo({
+        destination: Cartesian3.fromDegrees(120.42533699835855, 31.07777035267323, 1000)
+    });
 }
 </script>
 

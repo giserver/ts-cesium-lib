@@ -1,6 +1,6 @@
 import { BoundingSphere, CallbackProperty, Cartesian3, Cesium3DTileset, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
 import { FeatureBase, removeEntityByName, addArrayListener, ShapeType, MarkStyle } from "..";
-import { calArea, calLength, createLabel } from "../Utils";
+import { calArea, calLength, createLabel, window2Proj } from "../Utils";
 
 const MEASURE_DEFINE_NAME = "MEASURE_DEFINE_NAME"
 
@@ -65,7 +65,7 @@ export default class Marker extends FeatureBase {
         //鼠标左键 event  -> 创建标记点
         handler.setInputAction(event => {
 
-            let position = this.getPointFromWindowPoint(event.position)
+            let position = window2Proj(this.viewer,event.position)
             if (!position) return;
 
             if (defined(position)) {
@@ -98,7 +98,7 @@ export default class Marker extends FeatureBase {
         //鼠标移动 event -> 移动至下一个标记点
         handler.setInputAction(event => {
             if (defined(floatingPoint)) {
-                let position = this.getPointFromWindowPoint(event.endPosition);
+                let position = window2Proj(this.viewer,event.endPosition);
                 if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
@@ -114,7 +114,7 @@ export default class Marker extends FeatureBase {
             let lastEntity = activeShapePoints.pop();
             if (lastEntity !== undefined) {
                 //重置浮动点坐标
-                let position = this.getPointFromWindowPoint(event.position);
+                let position = window2Proj(this.viewer,event.position);
                 if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
@@ -175,22 +175,6 @@ export default class Marker extends FeatureBase {
      */
     private getEntityName(): string {
         return this.style.measureEnable ? MEASURE_DEFINE_NAME : "";
-    }
-
-    private getPointFromWindowPoint(point: any) {
-        const viewer = this.viewer;
-        const primitives = this.viewer.scene.primitives;
-        let has3Dtiles = false;
-        for (let i = 0; i < primitives.length; i++) {
-            has3Dtiles = primitives.get(i) instanceof Cesium3DTileset;
-            if (has3Dtiles) break;
-        }
-
-        if (viewer.scene.terrainProvider.constructor.name == "EllipsoidTerrainProvider" && !has3Dtiles) {
-            return viewer.camera.pickEllipsoid(point, viewer.scene.globe.ellipsoid);
-        } else {
-            return viewer.scene.pickPosition(point);
-        }
     }
 
     /**

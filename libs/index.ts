@@ -1,7 +1,6 @@
 import FeatureBase from './FeatureBase';
 
 import Marker from './editor/Marker';
-import VertexTool from './editor/VertexTool';
 
 import Mirror from './show/Mirror';
 import Weather from './show/Weather';
@@ -14,7 +13,7 @@ import AmapImageryProvider from './imagery/provider/AmapImageryProvider';
 import BaiduImageryProvider from './imagery/provider/BaiduImageryProvider';
 import { CustomProviderStyle, CrsType } from './imagery/ProviderStyle'
 
-import { createViewer, removeEntityByName, addArrayListener } from './Utils';
+import { createViewer, removeEntityByName, addArrayListener,setMaxPitch } from './Utils';
 
 import {
     ShapeType,
@@ -34,8 +33,8 @@ export {
     createViewer,
     removeEntityByName,
     addArrayListener,
+    setMaxPitch,
     Thinning,
-    VertexTool,
     Popup,
     AmapImageryProvider,
     BaiduImageryProvider

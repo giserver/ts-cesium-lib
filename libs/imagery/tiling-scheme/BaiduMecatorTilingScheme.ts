@@ -1,9 +1,9 @@
-import {WebMercatorTilingScheme,Math as CesiumMath,Cartographic,Cartesian2,Rectangle,defined, Ellipsoid, Cartesian3} from 'cesium'
+import { WebMercatorTilingScheme, Math as CesiumMath, Cartographic, Cartesian2, Rectangle, defined, Ellipsoid, Cartesian3 } from 'cesium'
 import CoordTransform from '../CoordTransform'
 import BaiduMercatorProjection from '../projection/BaiduMercatorProjection'
 
 class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
-  resolutions:number[];
+  resolutions: number[] = []
 
   constructor(options?: {
     ellipsoid?: Ellipsoid;
@@ -11,11 +11,11 @@ class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
     numberOfLevelZeroTilesY?: number;
     rectangleSouthwestInMeters?: Cartesian2;
     rectangleNortheastInMeters?: Cartesian2;
-    resolutions:number[]
-}) {
+    resolutions: number[]
+  }) {
     super(options)
     let projection = new BaiduMercatorProjection()
-    this.projection.project = function(cartographic, result) {
+    this.projection.project = function (cartographic, result) {
 
       let ret = CoordTransform.WGS84ToGCJ02(
         CesiumMath.toDegrees(cartographic.longitude),
@@ -34,8 +34,8 @@ class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
       return new Cartesian3(ret1.x, ret1.y)
     }
 
-    this.projection.unproject = function(cartesian, result) {
-      
+    this.projection.unproject = function (cartesian, result) {
+
       let ret = projection.mercatorToLngLat({
         lng: cartesian.x,
         lat: cartesian.y
@@ -48,7 +48,9 @@ class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
         CesiumMath.toRadians(ret1[1])
       )
     }
-    this.resolutions = options.resolutions || []
+
+    if (options)
+      this.resolutions = options.resolutions || []
   }
 
   /**
@@ -59,7 +61,7 @@ class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
    * @param result
    * @returns {module:cesium.Rectangle|*}
    */
-  tileXYToNativeRectangle(x:number, y:number, level:number, result?: any) {
+  tileXYToNativeRectangle(x: number, y: number, level: number, result?: any) {
     const tileWidth = this.resolutions[level]
     const west = x * tileWidth
     const east = (x + 1) * tileWidth
@@ -87,22 +89,25 @@ class BaiduMercatorTilingScheme extends WebMercatorTilingScheme {
   positionToTileXY(position: Cartographic, level: number, result?: Cartesian2): Cartesian2 {
     const rectangle = this.rectangle
     if (!Rectangle.contains(rectangle, position)) {
-      return undefined
+      return new Cartesian2();
     }
     const projection = this.projection
     const webMercatorPosition = projection.project(position)
     if (!defined(webMercatorPosition)) {
-      return undefined
+      return new Cartesian2();
     }
     const tileWidth = this.resolutions[level]
     const xTileCoordinate = Math.floor(webMercatorPosition.x / tileWidth)
     const yTileCoordinate = -Math.floor(webMercatorPosition.y / tileWidth)
-    if (!defined(result)) {
+
+    if (result) {
+      result.x = xTileCoordinate
+      result.y = yTileCoordinate
+      return result
+    }
+    else {
       return new Cartesian2(xTileCoordinate, yTileCoordinate)
     }
-    result.x = xTileCoordinate
-    result.y = yTileCoordinate
-    return result
   }
 }
 

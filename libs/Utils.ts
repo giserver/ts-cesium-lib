@@ -25,7 +25,52 @@ export function createViewer(containerName: string): Viewer {
     })
 
     viewer.scene.skyBox.show = false;
+
+    viewer.resolutionScale = window.devicePixelRatio;
+
+    //是否开启抗锯齿
+    viewer.postProcessStages.fxaa.enabled = false;
+    viewer.scene.postProcessStages.fxaa.enabled = false;
     return viewer;
+}
+
+/**
+ * 设置镜头最大俯仰角，镜头朝下=-Π  镜头平视=0
+ *
+ * @export
+ * @param {Viewer} viewer
+ * @param {number} maxPitch 一般使用负数，-pi ~ 0
+ */
+export function setMaxPitch(viewer: Viewer, maxPitch: number) {
+    var globe = viewer.scene.globe;
+    var camera = viewer.scene.camera;
+
+    var scratchNormal = new Cartesian3();
+    var previousPosition = new Cartesian3();
+    var previousDirection = new Cartesian3();
+    var previousUp = new Cartesian3();
+    var previousRight = new Cartesian3();
+
+    viewer.scene.postUpdate.addEventListener(function () {
+        var normal = globe.ellipsoid.geodeticSurfaceNormal(
+            camera.position,
+            scratchNormal
+        );
+
+        var dotProduct = Cartesian3.dot(camera.direction, normal);
+
+        if (dotProduct >= maxPitch) {
+            camera.position = Cartesian3.clone(previousPosition, camera.position);
+            camera.direction = Cartesian3.clone(previousDirection, camera.direction);
+            camera.up = Cartesian3.clone(previousUp, camera.up);
+            camera.right = Cartesian3.clone(previousRight, camera.right);
+        } else {
+            previousPosition = Cartesian3.clone(camera.position, previousPosition);
+            previousDirection = Cartesian3.clone(camera.direction, previousDirection);
+            previousUp = Cartesian3.clone(camera.up, previousUp);
+            previousRight = Cartesian3.clone(camera.right, previousRight);
+        }
+    });
 }
 
 /**
@@ -53,7 +98,8 @@ export function removeEntityByName(viewer: Viewer, name: string) {
 export function createLabel(text: string): LabelGraphics {
     return new LabelGraphics({
         text: text,
-        font: '10px Consolas',
+        font: 'normal 48px MicroSoft YaHei',
+        scale: 0.25,
         showBackground: true, // 是否显示背景颜色
         backgroundColor: new Color(0, 0, 0, 0.5),
         disableDepthTestDistance: Number.POSITIVE_INFINITY
@@ -70,7 +116,7 @@ export function createLabel(text: string): LabelGraphics {
  * @param {*} point
  * @return {*}  {(Cartesian3 | undefined)}
  */
-export function window2Proj(viewer: Viewer,point: any): Cartesian3 | undefined {
+export function window2Proj(viewer: Viewer, point: any): Cartesian3 | undefined {
     const primitives = viewer.scene.primitives;
     let has3Dtiles = false;
     for (let i = 0; i < primitives.length; i++) {
@@ -111,15 +157,15 @@ export function calArea(points: Cartesian3[]): number {
 }
 
 
- /**
-  * 计算线段长度 (根据空间类型)
-  *
-  * @export
-  * @param {[Cartesian3, Cartesian3]} segmentPoints
-  * @param {SpaceType} [spaceType='D3']
-  * @return {*}  {number}
-  */
- export function calLength(segmentPoints: [Cartesian3, Cartesian3], spaceType: SpaceType = 'D3'): number {
+/**
+ * 计算线段长度 (根据空间类型)
+ *
+ * @export
+ * @param {[Cartesian3, Cartesian3]} segmentPoints
+ * @param {SpaceType} [spaceType='D3']
+ * @return {*}  {number}
+ */
+export function calLength(segmentPoints: [Cartesian3, Cartesian3], spaceType: SpaceType = 'D3'): number {
 
     let start = segmentPoints[0];
     let end = segmentPoints[1];

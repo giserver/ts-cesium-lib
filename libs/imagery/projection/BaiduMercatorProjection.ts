@@ -157,7 +157,7 @@ type LngLatPoint = {
 
 class BaiduMercatorProjection {
 
-  isWgs84:boolean;
+  isWgs84: boolean;
 
   constructor() {
     this.isWgs84 = false
@@ -169,7 +169,7 @@ class BaiduMercatorProjection {
    * @param point2
    * @returns {number}
    */
-  getDistanceByMC(point1:LngLatPoint, point2:LngLatPoint) {
+  getDistanceByMC(point1: LngLatPoint, point2: LngLatPoint) {
     if (!point1 || !point2) {
       return 0
     }
@@ -194,7 +194,7 @@ class BaiduMercatorProjection {
    * @param point2
    * @returns {number|*}
    */
-  getDistanceByLL(point1:LngLatPoint, point2:LngLatPoint) {
+  getDistanceByLL(point1: LngLatPoint, point2: LngLatPoint) {
     if (!point1 || !point2) {
       return 0
     }
@@ -214,11 +214,11 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {Point|{lng: number, lat: number}}
    */
-  convertMC2LL(point:LngLatPoint) {
+  convertMC2LL(point: LngLatPoint) {
     if (!point) {
       return { lng: 0, lat: 0 }
     }
-    let lnglat = {lng:0,lat:0};
+    let lnglat = { lng: 0, lat: 0 };
     if (this.isWgs84) {
       lnglat.lng = (point.lng / 20037508.34) * 180
       let mmy = (point.lat / 20037508.34) * 180
@@ -236,7 +236,7 @@ class BaiduMercatorProjection {
       lat: Math.abs(point['lat'])
     }
 
-    let factor = undefined
+    let factor: number[] = [];
     for (let i = 0; i < MC_BAND.length; i++) {
       if (temp['lat'] >= MC_BAND[i]) {
         factor = MC2LL[i]
@@ -255,7 +255,7 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {{lng: number, lat: number}|*}
    */
-  convertLL2MC(point:LngLatPoint) {
+  convertLL2MC(point: LngLatPoint) {
     if (!point) {
       return { lng: 0, lat: 0 }
     }
@@ -269,7 +269,7 @@ class BaiduMercatorProjection {
     }
 
     if (this.isWgs84) {
-      let mercator = {lng:0,lat:0};
+      let mercator = { lng: 0, lat: 0 };
       let earthRad = 6378137.0
       mercator.lng = ((point.lng * Math.PI) / 180) * earthRad
       let a = (point.lat * Math.PI) / 180
@@ -285,7 +285,7 @@ class BaiduMercatorProjection {
     point['lng'] = this.getLoop(point['lng'], -180, 180)
     point['lat'] = this.getRange(point['lat'], -74, 74)
     let temp = { lng: point['lng'], lat: point['lat'] }
-    let factor = undefined
+    let factor: number[] = [];
     for (let i = 0; i < LL_BAND.length; i++) {
       if (temp['lat'] >= LL_BAND[i]) {
         factor = LL2MC[i]
@@ -313,7 +313,7 @@ class BaiduMercatorProjection {
    * @param factor
    * @returns {{lng: *, lat: *}}
    */
-  convertor(fromPoint:LngLatPoint, factor:number[]) {
+  convertor(fromPoint: LngLatPoint, factor: number[]) {
     if (!fromPoint || !factor) {
       return { lng: 0, lat: 0 }
     }
@@ -343,12 +343,12 @@ class BaiduMercatorProjection {
    * @param y2
    * @returns {number}
    */
-  getDistance(x1:number, x2:number, y1:number, y2:number):number {
+  getDistance(x1: number, x2: number, y1: number, y2: number): number {
     return (
       EARTH_RADIUS *
       Math.acos(
         Math.sin(y1) * Math.sin(y2) +
-          Math.cos(y1) * Math.cos(y2) * Math.cos(x2 - x1)
+        Math.cos(y1) * Math.cos(y2) * Math.cos(x2 - x1)
       )
     )
   }
@@ -358,7 +358,7 @@ class BaiduMercatorProjection {
    * @param deg
    * @returns {number}
    */
-  toRadians(deg:number):number {
+  toRadians(deg: number): number {
     return (Math.PI * deg) / 180
   }
 
@@ -367,7 +367,7 @@ class BaiduMercatorProjection {
    * @param rad
    * @returns {number}
    */
-  toDegrees(rad:number):number {
+  toDegrees(rad: number): number {
     return (180 * rad) / Math.PI
   }
 
@@ -378,7 +378,7 @@ class BaiduMercatorProjection {
    * @param b
    * @returns {number}
    */
-  getRange(v:number, a:number, b:number):number {
+  getRange(v: number, a: number, b: number): number {
     if (a != null) {
       v = Math.max(v, a)
     }
@@ -395,7 +395,7 @@ class BaiduMercatorProjection {
    * @param b
    * @returns {*}
    */
-  getLoop(v:number, a:number, b:number):number {
+  getLoop(v: number, a: number, b: number): number {
     while (v > b) {
       v -= b - a
     }
@@ -410,7 +410,7 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {{lng: number, lat: number}|*}
    */
-  lngLatToMercator(point:LngLatPoint) {
+  lngLatToMercator(point: LngLatPoint) {
     return this.convertLL2MC(point)
   }
 
@@ -419,7 +419,7 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {{x: (number|*), y: (number|*)}}
    */
-  lngLatToPoint(point:LngLatPoint) {
+  lngLatToPoint(point: LngLatPoint) {
     let mercator = this.convertLL2MC(point)
     return {
       x: mercator['lng'],
@@ -432,7 +432,7 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {Point|{lng: number, lat: number}}
    */
-  mercatorToLngLat(point:LngLatPoint) {
+  mercatorToLngLat(point: LngLatPoint) {
     return this.convertMC2LL(point)
   }
 
@@ -441,7 +441,7 @@ class BaiduMercatorProjection {
    * @param point
    * @returns {Point|{lng: number, lat: number}}
    */
-  pointToLngLat(point:LngLatPoint) {
+  pointToLngLat(point: LngLatPoint) {
     let mercator = { lng: point.lng, lat: point.lat }
     return this.convertMC2LL(mercator)
   }
@@ -454,7 +454,7 @@ class BaiduMercatorProjection {
    * @param mapSize
    * @returns {{x: number, y: number}}
    */
-  pointToPixel(point:LngLatPoint, zoom:number, mapCenter:LngLatPoint, mapSize:{width:number,height:number}) {
+  pointToPixel(point: LngLatPoint, zoom: number, mapCenter: LngLatPoint, mapSize: { width: number, height: number }) {
     if (!point) {
       return { x: 0, y: 0 }
     }
@@ -477,7 +477,7 @@ class BaiduMercatorProjection {
    * @param mapSize
    * @returns {Point|{lng: number, lat: number}}
    */
-  pixelToPoint(pixel:{x:number,y:number}, zoom:number, mapCenter:LngLatPoint, mapSize:{width:number,height:number}) {
+  pixelToPoint(pixel: { x: number, y: number }, zoom: number, mapCenter: LngLatPoint, mapSize: { width: number, height: number }) {
     if (!pixel) {
       return { lng: 0, lat: 0 }
     }
@@ -493,7 +493,7 @@ class BaiduMercatorProjection {
    * @param zoom
    * @returns {number}
    */
-  getZoomUnits(zoom:number) {
+  getZoomUnits(zoom: number) {
     return Math.pow(2, 18 - zoom)
   }
 }

@@ -1,5 +1,5 @@
 import { Camera, Viewer } from "cesium";
-import { createViewer, Mark } from "..";
+import { createViewer } from "..";
 
 /**
  * 镜像功能，可以实现双屏模式
@@ -9,10 +9,8 @@ import { createViewer, Mark } from "..";
  */
 export default class Mirror {
 
-    private master: Viewer;
-    private slave: Viewer;
-
-    private declare mark: Mark;
+    readonly master: Viewer;
+    readonly slave: Viewer;
 
     /**
      * Creates an instance of Mirror.
