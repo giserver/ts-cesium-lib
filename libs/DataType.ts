@@ -4,6 +4,11 @@
 export type ShapeType = 'Point' | 'Line' | 'Polygon';
 
 /**
+ * 测量模式 兼容形状 扩展三角测量
+ */
+export type MeasureMode = ShapeType | 'Triangle';
+
+/**
  * 指针类型 默认 | 十字
  */
 export type CursorStyle = 'Default' | 'CrossHair';
@@ -30,6 +35,4 @@ export interface MarkStyle {
    polygon_Outline: boolean;
    polygon_OutlineColor: string;
    polygon_OutlineWidth: number;
-
-   measureEnable: boolean;
 }

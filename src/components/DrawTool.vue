@@ -78,9 +78,6 @@
                 ></el-slider>
             </el-col>
         </el-row>
-        <el-row>
-            <el-checkbox v-model="style.measureEnable">测量模式</el-checkbox>
-        </el-row>
     </el-dialog>
 </template>
 

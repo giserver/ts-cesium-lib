@@ -1,8 +1,6 @@
-import { BoundingSphere, CallbackProperty, Cartesian3, Cesium3DTileset, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, removeEntityByName, addArrayListener, ShapeType, MarkStyle } from "..";
-import { calArea, calLength, createLabel, window2Proj } from "../Utils";
-
-const MEASURE_DEFINE_NAME = "MEASURE_DEFINE_NAME"
+import { CallbackProperty, Cartesian3, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
+import { FeatureBase, ShapeType, MarkStyle } from "..";
+import { window2Proj } from "../Utils";
 
 /**
  * 标记功能
@@ -12,7 +10,10 @@ const MEASURE_DEFINE_NAME = "MEASURE_DEFINE_NAME"
 export default class Marker extends FeatureBase {
 
     private callback?: (entity: Entity) => void;
-    private currentType: ShapeType = 'Point';
+
+    protected currentType: ShapeType = 'Point';
+    protected markPoints: Array<Entity> = [];
+    protected onEntityOnceDraw: ((entity: Entity) => void) | undefined;
 
     /**
      * 标记样式
@@ -36,7 +37,6 @@ export default class Marker extends FeatureBase {
             polygon_OutlineColor: "#90EE90",
             polygon_MaterialColor: "#ff0000",
             polygon_MaterialColor_Alpha: 0.2,
-            measureEnable: false,
         };
     }
 
@@ -54,10 +54,7 @@ export default class Marker extends FeatureBase {
         const handler = viewer.screenSpaceEventHandler;
         let activeShapePoints: Array<Cartesian3> = [];
         let floatingPoint: Entity | undefined;
-        let activeShape: Entity | undefined;
-        let markPoints: Array<Entity> = [];
-
-        this.addLineMeasure(markPoints);
+        let activeShape: Entity | undefined; 
 
         //双击鼠标左键清除默认事件
         viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
@@ -65,7 +62,7 @@ export default class Marker extends FeatureBase {
         //鼠标左键 event  -> 创建标记点
         handler.setInputAction(event => {
 
-            let position = window2Proj(this.viewer,event.position)
+            let position = window2Proj(this.viewer, event.position)
             if (!position) return;
 
             if (defined(position)) {
@@ -88,8 +85,7 @@ export default class Marker extends FeatureBase {
                     }, false));
                 }
                 activeShapePoints.push(position);
-                markPoints.push(new Entity({
-                    name: this.getEntityName(),
+                this.markPoints.push(new Entity({
                     position: new ConstantPositionProperty(position)
                 }))
             }
@@ -98,7 +94,7 @@ export default class Marker extends FeatureBase {
         //鼠标移动 event -> 移动至下一个标记点
         handler.setInputAction(event => {
             if (defined(floatingPoint)) {
-                let position = window2Proj(this.viewer,event.endPosition);
+                let position = window2Proj(this.viewer, event.endPosition);
                 if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
@@ -114,7 +110,7 @@ export default class Marker extends FeatureBase {
             let lastEntity = activeShapePoints.pop();
             if (lastEntity !== undefined) {
                 //重置浮动点坐标
-                let position = window2Proj(this.viewer,event.position);
+                let position = window2Proj(this.viewer, event.position);
                 if (position) {
                     if (floatingPoint)
                         floatingPoint.position = new ConstantPositionProperty(position);
@@ -122,18 +118,18 @@ export default class Marker extends FeatureBase {
                     activeShapePoints.push(position);
                 }
 
-                markPoints.pop();
+                this.markPoints.pop();
             }
         }, ScreenSpaceEventType.RIGHT_CLICK)
 
         //鼠标左键双击 event -> 完成标记
         handler.setInputAction(event => {
-            activeShapePoints.pop(); //去除最后一个动态点
+            activeShapePoints.pop(); 
+            activeShapePoints.pop();//去除最后一个动态点
             if (activeShapePoints.length) {
                 let entity = this.drawShape(type, activeShapePoints); //绘制最终图
-                if (this.callback != undefined) {
+                if (this.callback)
                     this.callback(entity);
-                }
             }
             if (floatingPoint)
                 viewer.entities.remove(floatingPoint); //去除动态点图形（当前鼠标点）
@@ -142,7 +138,7 @@ export default class Marker extends FeatureBase {
             floatingPoint = undefined;
             activeShape = undefined;
             activeShapePoints = [];
-            markPoints.length = 0;
+            this.markPoints.length = 0;
         }, ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     }
 
@@ -161,20 +157,6 @@ export default class Marker extends FeatureBase {
         handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
         this.viewer.scene.globe.depthTestAgainstTerrain = false;
-
-        //删除测量数据
-        removeEntityByName(this.viewer, MEASURE_DEFINE_NAME);
-    }
-
-    /**
-     * 获取实体名称
-     *
-     * @private
-     * @return {*}  {string}
-     * @memberof Marker
-     */
-    private getEntityName(): string {
-        return this.style.measureEnable ? MEASURE_DEFINE_NAME : "";
     }
 
     /**
@@ -187,114 +169,61 @@ export default class Marker extends FeatureBase {
      * @return {*}  {Entity}
      * @memberof Mark
      */
-    private drawShape(shapetype: ShapeType, position: any): Entity {
-        const entityName = this.getEntityName();
-        switch (shapetype) {
-            case 'Point':
-                return this.viewer.entities.add({
-                    name: entityName,
-                    position: position,
-                    point: {
-                        color: Color.fromCssColorString(this.style.point_Color),
-                        pixelSize: this.style.point_PixelSize,
-                        heightReference: HeightReference.CLAMP_TO_GROUND
+    protected drawShape(shapetype: ShapeType, position: any): Entity {
+        let ret_entity = (() => {
+            switch (shapetype) {
+                case 'Point':
+                    return this.viewer.entities.add({
+                        position: position,
+                        point: {
+                            color: Color.fromCssColorString(this.style.point_Color),
+                            pixelSize: this.style.point_PixelSize,
+                            heightReference: HeightReference.CLAMP_TO_GROUND
+                        }
+                    });
+                case 'Line':
+                    return this.viewer.entities.add({
+                        polyline: {
+                            positions: position,
+                            clampToGround: true,
+                            width: this.style.line_Width,
+                            material: new PolylineGlowMaterialProperty({
+                                color: Color.fromCssColorString(this.style.line_MaterialColor)
+                            })
+                        }
+                    });
+                case 'Polygon':
+                    var entity = this.viewer.entities.add({
+                        polygon: {
+                            hierarchy: position,
+                            material: Color.fromCssColorString(this.style.polygon_MaterialColor)
+                                .withAlpha(this.style.polygon_MaterialColor_Alpha)
+                        }
+                    });
+
+                    //获取polygon的轮廓闭合点 计算测量结果
+                    let getRings = () => {
+                        if (this.onEntityOnceDraw) this.onEntityOnceDraw(entity);
+                        let polylinePositaions = new Array<Cartesian3>().concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
+                        polylinePositaions.push(polylinePositaions[0]);
+                        return polylinePositaions;
                     }
-                });
-            case 'Line':
-                return this.viewer.entities.add({
-                    name: entityName,
-                    polyline: {
-                        positions: position,
-                        clampToGround: true,
-                        width: this.style.line_Width,
-                        material: new PolylineGlowMaterialProperty({
-                            color: Color.fromCssColorString(this.style.line_MaterialColor)
+
+                    if (this.style.polygon_Outline) {
+                        //添加外轮廓
+                        entity.polyline = new PolylineGraphics({
+                            positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
+                            width: this.style.polygon_OutlineWidth,
+                            material: Color.fromCssColorString(this.style.polygon_OutlineColor),
+                            clampToGround: true
                         })
                     }
-                });
-            case 'Polygon':
-                var entity = this.viewer.entities.add({
-                    name: entityName,
-                    polygon: {
-                        hierarchy: position,
-                        material: Color.fromCssColorString(this.style.polygon_MaterialColor)
-                            .withAlpha(this.style.polygon_MaterialColor_Alpha)
-                    }
-                });
 
-                //获取polygon的轮廓闭合点 计算测量结果
-                let getRings = () => {
-                    let polylinePositaions: Array<Cartesian3> = [];
-                    polylinePositaions = polylinePositaions.concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
-
-                    //添加测量面积
-                    if (this.style.measureEnable) {
-                        if (polylinePositaions.length < 3) {
-                            entity.position = undefined;
-                        }
-                        else {
-                            let area = calArea(polylinePositaions);
-                            entity.position = new ConstantPositionProperty(BoundingSphere.fromPoints(polylinePositaions).center);
-                            entity.label = createLabel('面积: ' + (area > 10000 ? (area / 1000000).toFixed(4) + ' km²' : area.toFixed(2) + ' m²'));
-                        }
-                    }
-
-                    polylinePositaions.push(polylinePositaions[0]);
-                    return polylinePositaions;
-                }
-
-                if (this.style.polygon_Outline) {
-                    //添加外轮廓
-                    entity.polyline = new PolylineGraphics({
-                        positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
-                        width: this.style.polygon_OutlineWidth,
-                        material: Color.fromCssColorString(this.style.polygon_OutlineColor),
-                        clampToGround: true
-                    })
-                }
-
-                return entity;
-        }
-    }
-
-    /**
-     * 测量线标记
-     *
-     * @private
-     * @param {Array<Entity>} markPoints
-     * @memberof Mark
-     */
-    private addLineMeasure(markPoints: Array<Entity>) {
-
-        //添加点事件
-        addArrayListener(markPoints, "push", (array, args) => {
-            if (this.style.measureEnable && this.currentType === 'Line') {
-                let entity = args[0] as Entity;
-                let length = 0;
-
-                if (array.length !== 0) {
-                    for (let i = 0; i < array.length; i++) {
-                        let currentPoint = array[i].position?.getValue(JulianDate.now());
-
-                        //获取下一个点 当i为数组最后一个下标则设置为push的参数
-                        let nextPoint = i === array.length - 1 ?
-                            entity.position?.getValue(JulianDate.now()) :
-                            array[i + 1].position?.getValue(JulianDate.now());
-
-                        if (currentPoint !== undefined && nextPoint !== undefined)
-                            length += calLength([currentPoint, nextPoint]);
-                    }
-                }
-
-                entity.label = createLabel(length === 0 ? "起点" : length < 1000 ? `${length.toFixed(2)} m` : `${(length / 1000.0).toFixed(4)} km`);
-                this.viewer.entities.add(entity);
+                    return entity;
             }
-        })
-
-        //删除点事件
-        addArrayListener(markPoints, "pop", (array, args) => {
-            if (this.style.measureEnable && this.currentType === 'Line')
-                this.viewer.entities.remove(array[array.length - 1]);
-        })
+        })();
+        
+        if (this.onEntityOnceDraw) this.onEntityOnceDraw(ret_entity);
+        return ret_entity;
     }
 }
