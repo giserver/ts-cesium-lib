@@ -22,13 +22,14 @@ import { createViewer, Marker, Mirror } from '../../libs';
 import SwitchMap from '../components/SwitchMap.vue';
 import DrawTool from '../components/DrawTool.vue';
 import Measure from '../../libs/editor/Measure';
+import MarkerNew from '../../libs/editor/MarkerNew';
 
 const container_master = "container_master";
 const container_slave = "container_slave";
 
 let viewer_master = ref<Viewer>();
 let viewer_slave = ref<Viewer>();
-let marker = ref<Measure>();
+let marker = ref<MarkerNew>();
 
 onMounted(() => {
     viewer_master.value = createViewer(container_master);
@@ -37,8 +38,8 @@ onMounted(() => {
     new Mirror(viewer_master.value,viewer_slave.value)
 
     //marker.value = new Marker(viewer_master.value,entity=>viewer_slave.value?.entities.add(entity));
-    marker.value = new Measure(viewer_master.value);
-    marker.value.start('Triangle');
+    marker.value = new MarkerNew(viewer_master.value);
+    marker.value.start("Polygon");
 })
 
 </script>
