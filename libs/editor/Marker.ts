@@ -1,59 +1,35 @@
-import { CallbackProperty, Cartesian3, Color, ConstantPositionProperty, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, MarkStyle, ShapeType } from "..";
+import { CallbackProperty, Cartesian3, ConstantPositionProperty, Entity, PolygonHierarchy, ScreenSpaceEventType, Viewer } from "cesium";
+import { ShapeType } from "..";
 import { window2Proj } from "../Utils";
+import Editor from "./Editor";
 
-export default class Marker extends FeatureBase {
-    private handler: ScreenSpaceEventHandler;
+export default class Marker extends Editor<ShapeType> {
 
-    protected onActivityShapeChange?: (points: Array<Cartesian3>) => void;
-    protected onStop?: () => void;
+    private onEntitySave?: (entity: Entity) => void
+    private onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void
 
-    /**
-    * 标记样式
-    *
-    * @type {MarkStyle}
-    * @memberof Marker
-    */
-    public readonly style: MarkStyle;
-
-    /**
-     * 
-     */
-    constructor(viewer: Viewer, private onEntitySave?: (entity: Entity) => void) {
+    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void, onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void) {
         super(viewer);
-        this.handler = viewer.screenSpaceEventHandler;
-
-        this.style = {
-            point_Color: "#ffffff",
-            point_PixelSize: 5,
-            line_Width: 5,
-            line_MaterialColor: "#ff0000",
-            polygon_Outline: true,
-            polygon_OutlineWidth: 1,
-            polygon_OutlineColor: "#90EE90",
-            polygon_MaterialColor: "#ff0000",
-            polygon_MaterialColor_Alpha: 0.2,
-        };
+        this.onEntitySave = onEntitySave;
+        this.onActivityShapeChange = onActivityShapeChange;
     }
 
-    start(type: ShapeType) {
-        //设置十字光标
-        this.setCursorStyle('CrossHair');
+    protected override onStart() {
+        const type = <ShapeType>this.currentMode;
 
         let activeShape: Entity | undefined;    //动态图形
         let activeShapePoints: Array<Cartesian3> = [];  //动态图形点集合
         let floatingPoint: Entity | undefined;  //浮动点
 
-
         //鼠标左键点击 -> 开始绘制、初始化动态entity、向动态点集合添加动态点
-        this.handler.setInputAction(event => {
+        this.handler.setInputAction((event: any) => {
             //获取地理坐标
             const position = window2Proj(this.viewer, event.position);
             if (position) {
                 //如果标记类型是Point 第一个点就返回
                 if (type === 'Point') {
                     const entity = this.drawShape('Point', position);
-                    this.onActivityShapeChange?.call(this, [position]);
+                    this.onActivityShapeChange?.call(this, type, [position]);
                     this.onEntitySave?.call(this, entity);
                     return;
                 }
@@ -64,7 +40,7 @@ export default class Marker extends FeatureBase {
                     floatingPoint = this.drawShape('Point', position);
                     //创建动态图形
                     activeShape = this.drawShape(type, new CallbackProperty(() => {
-                        this.onActivityShapeChange?.call(this, activeShapePoints);
+                        this.onActivityShapeChange?.call(this, type, activeShapePoints);
                         return type === 'Polygon' ? new PolygonHierarchy(activeShapePoints) : activeShapePoints;
                     }, false))
 
@@ -77,14 +53,14 @@ export default class Marker extends FeatureBase {
         }, ScreenSpaceEventType.LEFT_CLICK);
 
         //鼠标移动 -> 移动浮动点
-        this.handler.setInputAction(event => {
+        this.handler.setInputAction((event: any) => {
             const position = window2Proj(this.viewer, event.endPosition);
             if (floatingPoint && position)
                 updateFloatingPoint(position);
         }, ScreenSpaceEventType.MOUSE_MOVE);
 
         //鼠标右键点击 -> 删除最后一个标记
-        this.handler.setInputAction(event => {
+        this.handler.setInputAction((event: any) => {
             //删除最后一个标记
             let lastEntity = activeShapePoints.pop();
 
@@ -101,97 +77,22 @@ export default class Marker extends FeatureBase {
         }
 
         //鼠标左键双击 -> 完成标记
-        this.handler.setInputAction(event => {
+        this.handler.setInputAction((event: any) => {
             activeShapePoints.pop();
             if (activeShapePoints.length) {
                 let entity = this.drawShape(type, activeShapePoints);
                 this.onEntitySave?.call(this, entity);
             }
 
+            //释放资源
             if (floatingPoint) this.viewer.entities.remove(floatingPoint);
             if (activeShape) this.viewer.entities.remove(activeShape);
-
             floatingPoint = undefined;
             activeShape = undefined;
             activeShapePoints = [];
         }, ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     }
 
-    stop() {
-        //设置默认光标
-        this.setCursorStyle('Default');
-        //关闭深度监测
-        this.viewer.scene.globe.depthTestAgainstTerrain = false;
-
-        //删除所有输入事件
-        this.handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-        this.handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
-        this.handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
-        this.handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-
-        //停止标记回调
-        this.onStop?.call(this);
-    }
-
-    /**
-     * 绘制形状
-     *
-     * @private
-     * @param {ShapeType} shapetype 形状类型
-     * @param {*} position 形状点位
-     * @param {boolean} [measureEnable] 是否开启测量
-     * @return {*}  {Entity}
-     * @memberof Mark
-     */
-    protected drawShape(shapetype: ShapeType, position: any): Entity {
-        switch (shapetype) {
-            case 'Point':
-                return this.viewer.entities.add({
-                    position: position,
-                    point: {
-                        color: Color.fromCssColorString(this.style.point_Color),
-                        pixelSize: this.style.point_PixelSize,
-                        heightReference: HeightReference.CLAMP_TO_GROUND
-                    }
-                });
-            case 'Line':
-                return this.viewer.entities.add({
-                    polyline: {
-                        positions: position,
-                        clampToGround: true,
-                        width: this.style.line_Width,
-                        material: new PolylineGlowMaterialProperty({
-                            color: Color.fromCssColorString(this.style.line_MaterialColor)
-                        })
-                    }
-                });
-            case 'Polygon':
-                var entity = this.viewer.entities.add({
-                    polygon: {
-                        hierarchy: position,
-                        material: Color.fromCssColorString(this.style.polygon_MaterialColor)
-                            .withAlpha(this.style.polygon_MaterialColor_Alpha)
-                    }
-                });
-
-                //获取polygon的轮廓闭合点
-                let getRings = () => {
-                    let polylinePositaions = new Array<Cartesian3>().concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
-                    polylinePositaions.push(polylinePositaions[0]);
-                    return polylinePositaions;
-                }
-
-                if (this.style.polygon_Outline) {
-                    //添加外轮廓
-                    entity.polyline = new PolylineGraphics({
-                        positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
-                        width: this.style.polygon_OutlineWidth,
-                        material: Color.fromCssColorString(this.style.polygon_OutlineColor),
-                        clampToGround: true
-                    })
-                }
-
-                return entity;
-        }
+    protected override onStop() {
     }
 }
