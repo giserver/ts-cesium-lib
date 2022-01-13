@@ -1,31 +1,27 @@
-import { CallbackProperty, Cartesian3, Color, ConstantPositionProperty, defined, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, ShapeType, MarkStyle } from "..";
+import { CallbackProperty, Cartesian3, Color, ConstantPositionProperty, Entity, HeightReference, JulianDate, PolygonHierarchy, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from "cesium";
+import { FeatureBase, MarkStyle, ShapeType } from "..";
 import { window2Proj } from "../Utils";
 
-/**
- * 标记功能
- *
- * @class Mark
- */
 export default class Marker extends FeatureBase {
+    private handler: ScreenSpaceEventHandler;
 
-    private callback?: (entity: Entity) => void;
-
-    protected currentType: ShapeType = 'Point';
-    protected markPoints: Array<Entity> = [];
-    protected onEntityOnceDraw: ((entity: Entity) => void) | undefined;
+    protected onActivityShapeChange?: (points: Array<Cartesian3>) => void;
+    protected onStop?: () => void;
 
     /**
-     * 标记样式
-     *
-     * @type {MarkStyle}
-     * @memberof Marker
-     */
+    * 标记样式
+    *
+    * @type {MarkStyle}
+    * @memberof Marker
+    */
     public readonly style: MarkStyle;
 
-    constructor(viewer: Viewer, callback?: (entity: Entity) => void) {
+    /**
+     * 
+     */
+    constructor(viewer: Viewer, private onEntitySave?: (entity: Entity) => void) {
         super(viewer);
-        this.callback = callback;
+        this.handler = viewer.screenSpaceEventHandler;
 
         this.style = {
             point_Color: "#ffffff",
@@ -40,123 +36,101 @@ export default class Marker extends FeatureBase {
         };
     }
 
-    /**
-     * 开始标记功能
-     *
-     * @param {MarkProps} props 标记类型
-     * @memberof Mark
-     */
     start(type: ShapeType) {
-        this.currentType = type;
+        //设置十字光标
         this.setCursorStyle('CrossHair');
 
-        const viewer = this.viewer;
-        const handler = viewer.screenSpaceEventHandler;
-        let activeShapePoints: Array<Cartesian3> = [];
-        let floatingPoint: Entity | undefined;
-        let activeShape: Entity | undefined; 
+        let activeShape: Entity | undefined;    //动态图形
+        let activeShapePoints: Array<Cartesian3> = [];  //动态图形点集合
+        let floatingPoint: Entity | undefined;  //浮动点
 
-        //双击鼠标左键清除默认事件
-        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-        //鼠标左键 event  -> 创建标记点
-        handler.setInputAction(event => {
-
-            let position = window2Proj(this.viewer, event.position)
-            if (!position) return;
-
-            if (defined(position)) {
-                //如果标记类型为点，直接return
+        //鼠标左键点击 -> 开始绘制、初始化动态entity、向动态点集合添加动态点
+        this.handler.setInputAction(event => {
+            //获取地理坐标
+            const position = window2Proj(this.viewer, event.position);
+            if (position) {
+                //如果标记类型是Point 第一个点就返回
                 if (type === 'Point') {
-                    let entity = this.drawShape('Point', position);
-                    if (this.callback !== undefined)
-                        this.callback(entity);
+                    const entity = this.drawShape('Point', position);
+                    this.onActivityShapeChange?.call(this, [position]);
+                    this.onEntitySave?.call(this, entity);
                     return;
                 }
 
+                //如果绘制第一笔 ,创建动态图形
                 if (activeShapePoints.length === 0) {
+                    //添加浮动点
                     floatingPoint = this.drawShape('Point', position);
-                    activeShapePoints.push(position);
+                    //创建动态图形
                     activeShape = this.drawShape(type, new CallbackProperty(() => {
-                        if (type === 'Polygon') {
-                            return new PolygonHierarchy(activeShapePoints);
-                        }
-                        return activeShapePoints;
-                    }, false));
-                }
-                activeShapePoints.push(position);
-                this.markPoints.push(new Entity({
-                    position: new ConstantPositionProperty(position)
-                }))
-            }
-        }, ScreenSpaceEventType.LEFT_CLICK)
+                        this.onActivityShapeChange?.call(this, activeShapePoints);
+                        return type === 'Polygon' ? new PolygonHierarchy(activeShapePoints) : activeShapePoints;
+                    }, false))
 
-        //鼠标移动 event -> 移动至下一个标记点
-        handler.setInputAction(event => {
-            if (defined(floatingPoint)) {
-                let position = window2Proj(this.viewer, event.endPosition);
-                if (position) {
-                    if (floatingPoint)
-                        floatingPoint.position = new ConstantPositionProperty(position);
-                    activeShapePoints.pop();
                     activeShapePoints.push(position);
                 }
-            }
-        }, ScreenSpaceEventType.MOUSE_MOVE)
 
-        //鼠标右键点击  删除最后一个标记点
-        handler.setInputAction(event => {
+                //添加点
+                activeShapePoints.push(position);
+            }
+        }, ScreenSpaceEventType.LEFT_CLICK);
+
+        //鼠标移动 -> 移动浮动点
+        this.handler.setInputAction(event => {
+            const position = window2Proj(this.viewer, event.endPosition);
+            if (floatingPoint && position)
+                updateFloatingPoint(position);
+        }, ScreenSpaceEventType.MOUSE_MOVE);
+
+        //鼠标右键点击 -> 删除最后一个标记
+        this.handler.setInputAction(event => {
             //删除最后一个标记
             let lastEntity = activeShapePoints.pop();
-            if (lastEntity !== undefined) {
-                //重置浮动点坐标
-                let position = window2Proj(this.viewer, event.position);
-                if (position) {
-                    if (floatingPoint)
-                        floatingPoint.position = new ConstantPositionProperty(position);
-                    activeShapePoints.pop();
-                    activeShapePoints.push(position);
-                }
 
-                this.markPoints.pop();
-            }
+            let position = window2Proj(this.viewer, event.position);
+            if (lastEntity && position)
+                updateFloatingPoint(position);
         }, ScreenSpaceEventType.RIGHT_CLICK)
 
-        //鼠标左键双击 event -> 完成标记
-        handler.setInputAction(event => {
-            activeShapePoints.pop(); 
-            activeShapePoints.pop();//去除最后一个动态点
-            if (activeShapePoints.length) {
-                let entity = this.drawShape(type, activeShapePoints); //绘制最终图
-                if (this.callback)
-                    this.callback(entity);
-            }
+        function updateFloatingPoint(position: Cartesian3) {
             if (floatingPoint)
-                viewer.entities.remove(floatingPoint); //去除动态点图形（当前鼠标点）
-            if (activeShape)
-                viewer.entities.remove(activeShape); //去除动态图形
+                floatingPoint.position = new ConstantPositionProperty(position);
+            activeShapePoints.pop();
+            activeShapePoints.push(position);
+        }
+
+        //鼠标左键双击 -> 完成标记
+        this.handler.setInputAction(event => {
+            activeShapePoints.pop();
+            if (activeShapePoints.length) {
+                let entity = this.drawShape(type, activeShapePoints);
+                this.onEntitySave?.call(this, entity);
+            }
+
+            if (floatingPoint) this.viewer.entities.remove(floatingPoint);
+            if (activeShape) this.viewer.entities.remove(activeShape);
+
             floatingPoint = undefined;
             activeShape = undefined;
             activeShapePoints = [];
-            this.markPoints.length = 0;
         }, ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
     }
 
-    /**
-     * 停止标记
-     *
-     * @memberof Mark
-     */
     stop() {
+        //设置默认光标
         this.setCursorStyle('Default');
-        const handler = this.viewer.screenSpaceEventHandler;
-
-        handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-        handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
-        handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
-        handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-
+        //关闭深度监测
         this.viewer.scene.globe.depthTestAgainstTerrain = false;
+
+        //删除所有输入事件
+        this.handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+        this.handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
+        this.handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
+        this.handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+
+        //停止标记回调
+        this.onStop?.call(this);
     }
 
     /**
@@ -170,60 +144,54 @@ export default class Marker extends FeatureBase {
      * @memberof Mark
      */
     protected drawShape(shapetype: ShapeType, position: any): Entity {
-        let ret_entity = (() => {
-            switch (shapetype) {
-                case 'Point':
-                    return this.viewer.entities.add({
-                        position: position,
-                        point: {
-                            color: Color.fromCssColorString(this.style.point_Color),
-                            pixelSize: this.style.point_PixelSize,
-                            heightReference: HeightReference.CLAMP_TO_GROUND
-                        }
-                    });
-                case 'Line':
-                    return this.viewer.entities.add({
-                        polyline: {
-                            positions: position,
-                            clampToGround: true,
-                            width: this.style.line_Width,
-                            material: new PolylineGlowMaterialProperty({
-                                color: Color.fromCssColorString(this.style.line_MaterialColor)
-                            })
-                        }
-                    });
-                case 'Polygon':
-                    var entity = this.viewer.entities.add({
-                        polygon: {
-                            hierarchy: position,
-                            material: Color.fromCssColorString(this.style.polygon_MaterialColor)
-                                .withAlpha(this.style.polygon_MaterialColor_Alpha)
-                        }
-                    });
-
-                    //获取polygon的轮廓闭合点 计算测量结果
-                    let getRings = () => {
-                        if (this.onEntityOnceDraw) this.onEntityOnceDraw(entity);
-                        let polylinePositaions = new Array<Cartesian3>().concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
-                        polylinePositaions.push(polylinePositaions[0]);
-                        return polylinePositaions;
+        switch (shapetype) {
+            case 'Point':
+                return this.viewer.entities.add({
+                    position: position,
+                    point: {
+                        color: Color.fromCssColorString(this.style.point_Color),
+                        pixelSize: this.style.point_PixelSize,
+                        heightReference: HeightReference.CLAMP_TO_GROUND
                     }
-
-                    if (this.style.polygon_Outline) {
-                        //添加外轮廓
-                        entity.polyline = new PolylineGraphics({
-                            positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
-                            width: this.style.polygon_OutlineWidth,
-                            material: Color.fromCssColorString(this.style.polygon_OutlineColor),
-                            clampToGround: true
+                });
+            case 'Line':
+                return this.viewer.entities.add({
+                    polyline: {
+                        positions: position,
+                        clampToGround: true,
+                        width: this.style.line_Width,
+                        material: new PolylineGlowMaterialProperty({
+                            color: Color.fromCssColorString(this.style.line_MaterialColor)
                         })
                     }
+                });
+            case 'Polygon':
+                var entity = this.viewer.entities.add({
+                    polygon: {
+                        hierarchy: position,
+                        material: Color.fromCssColorString(this.style.polygon_MaterialColor)
+                            .withAlpha(this.style.polygon_MaterialColor_Alpha)
+                    }
+                });
 
-                    return entity;
-            }
-        })();
-        
-        if (this.onEntityOnceDraw) this.onEntityOnceDraw(ret_entity);
-        return ret_entity;
+                //获取polygon的轮廓闭合点
+                let getRings = () => {
+                    let polylinePositaions = new Array<Cartesian3>().concat(entity.polygon?.hierarchy?.getValue(JulianDate.now()).positions as Cartesian3[]);
+                    polylinePositaions.push(polylinePositaions[0]);
+                    return polylinePositaions;
+                }
+
+                if (this.style.polygon_Outline) {
+                    //添加外轮廓
+                    entity.polyline = new PolylineGraphics({
+                        positions: position instanceof CallbackProperty ? new CallbackProperty(getRings, false) : getRings(),
+                        width: this.style.polygon_OutlineWidth,
+                        material: Color.fromCssColorString(this.style.polygon_OutlineColor),
+                        clampToGround: true
+                    })
+                }
+
+                return entity;
+        }
     }
 }

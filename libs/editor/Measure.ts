@@ -9,8 +9,7 @@ export default class Measure extends Marker {
     constructor(viewer: Viewer) {
         super(viewer, entity => entity.name = MEASURE_DEFINE_NAME);
 
-        this.addLineMeasure(this.markPoints);
-        this.onEntityOnceDraw = this.handleEntityOnceDraw;
+        this.onActivityShapeChange = this.handleEntityOnceDraw;
     }
 
     start(mode: MeasureMode) {
@@ -23,7 +22,7 @@ export default class Measure extends Marker {
 
     stop(): void {
         super.stop();
-        removeEntityByName(this.viewer, MEASURE_DEFINE_NAME);
+        removeEntityByName(this.viewer.entities, MEASURE_DEFINE_NAME);
     }
 
     private handleEntityOnceDraw(entity: Entity) {

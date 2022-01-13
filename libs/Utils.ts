@@ -1,4 +1,4 @@
-import { Cartesian3, Cesium3DTileset, Color, LabelGraphics, Viewer } from "cesium";
+import { Cartesian3, Cesium3DTileset, Color, EntityCollection, LabelGraphics, Viewer } from "cesium";
 import { SpaceType } from ".";
 
 /**
@@ -79,11 +79,11 @@ export function setMaxPitch(viewer: Viewer, maxPitch: number) {
  * @param {Viewer} viewer
  * @param {string} name
  */
-export function removeEntityByName(viewer: Viewer, name: string) {
-    for (let index = viewer.entities.values.length - 1; index > -1; index--) {
-        let entity = viewer.entities.values[index];
+export function removeEntityByName(entities: EntityCollection, name: string) {
+    for (let index = entities.values.length - 1; index > -1; index--) {
+        let entity = entities.values[index];
         if (entity.name === name)
-            viewer.entities.remove(entity);
+            entities.remove(entity);
     }
 }
 

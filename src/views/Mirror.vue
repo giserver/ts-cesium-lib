@@ -22,7 +22,7 @@ import { createViewer, Marker, Mirror } from '../../libs';
 import SwitchMap from '../components/SwitchMap.vue';
 import DrawTool from '../components/DrawTool.vue';
 import Measure from '../../libs/editor/Measure';
-import MarkerNew from '../../libs/editor/MarkerNew';
+import MarkerNew from '../../libs/editor/Marker';
 
 const container_master = "container_master";
 const container_slave = "container_slave";
