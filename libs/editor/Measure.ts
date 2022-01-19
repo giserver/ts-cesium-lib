@@ -17,7 +17,11 @@ export default class Measure extends Editor<MeasureMode> {
             entity.name = MEASURE_DEFINE_NAME;
             this.areaLable = undefined;
             this.linePoints = undefined;
-        }, this.handleActivityShapeChange());
+        });
+
+        this.marker.onActivityShapeChange = this.handleActivityShapeChange();
+        this.marker.onPushPoint = this.handleMakerPushPoint();
+        this.marker.onPopPoint = this.handleMakerPopPoint();
     }
 
     protected override onStart() {
@@ -33,36 +37,41 @@ export default class Measure extends Editor<MeasureMode> {
         removeEntityByName(this.viewer.entities, MEASURE_DEFINE_NAME);
     }
 
-    private handleActivityShapeChange() {
+    private handleMakerPushPoint() {
         const that = this;
-        return (mode: ShapeType, points: Array<Cartesian3>) => {
-            if (mode === 'Point') {
-                const point = points[0];
+        return (point: Cartesian3) => {
+            if (this.currentMode === 'Point') {
                 that.viewer.entities.add(new Entity({
                     name: MEASURE_DEFINE_NAME,
                     position: point,
                     label: createLabel(`x:${point.x},y:${point.y}`)
                 }));
-            }
-            else if (mode === 'Line') {
+            } else if (this.currentMode === 'Line') {
                 if (that.linePoints === undefined) {
-                    console.log(that);
                     that.linePoints = new Array<Entity>();
-                    this.addLineMeasure(that.linePoints);
+                    that.addLineMeasure(that.linePoints);
                 }
-
-                let count = points.length - that.linePoints.length;
-                for (let i = 0; i < Math.abs(count); i++) {
-                    if (count < 0)
-                        that.linePoints.pop();
-                    else if (count > 0)
-                        that.linePoints.push(new Entity({
-                            name: MEASURE_DEFINE_NAME,
-                            position: points[that.linePoints.length]
-                        }))
-                }
+                that.linePoints.push(new Entity({
+                    name: MEASURE_DEFINE_NAME,
+                    position: point
+                }))
             }
-            else if (mode === 'Polygon') {
+        }
+
+    }
+
+    private handleMakerPopPoint() {
+        const that = this;
+        return (point: Cartesian3) => {
+            if (that.currentMode === 'Line' && that.linePoints)
+            that.linePoints.pop();
+        }
+    }
+
+    private handleActivityShapeChange() {
+        const that = this;
+        return (mode: ShapeType, points: Array<Cartesian3>) => {
+            if (mode === 'Polygon') {
                 if (that.areaLable === undefined)
                     that.areaLable = that.viewer.entities.add(new Entity({
                         name: MEASURE_DEFINE_NAME

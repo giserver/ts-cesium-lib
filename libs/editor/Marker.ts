@@ -6,12 +6,13 @@ import Editor from "./Editor";
 export default class Marker extends Editor<ShapeType> {
 
     private onEntitySave?: (entity: Entity) => void
-    private onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void
+    public onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void
+    public onPushPoint?: (point: Cartesian3) => void;
+    public onPopPoint?: (point: Cartesian3) => void;
 
-    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void, onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void) {
+    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void) {
         super(viewer);
         this.onEntitySave = onEntitySave;
-        this.onActivityShapeChange = onActivityShapeChange;
     }
 
     protected override onStart() {
@@ -26,10 +27,12 @@ export default class Marker extends Editor<ShapeType> {
             //获取地理坐标
             const position = window2Proj(this.viewer, event.position);
             if (position) {
+                //执行添加点事件
+                this.onPushPoint?.call(this, position);
+
                 //如果标记类型是Point 第一个点就返回
                 if (type === 'Point') {
                     const entity = this.drawShape('Point', position);
-                    this.onActivityShapeChange?.call(this, type, [position]);
                     this.onEntitySave?.call(this, entity);
                     return;
                 }
@@ -47,7 +50,6 @@ export default class Marker extends Editor<ShapeType> {
                     activeShapePoints.push(position);
                 }
 
-                //添加点
                 activeShapePoints.push(position);
             }
         }, ScreenSpaceEventType.LEFT_CLICK);
@@ -65,8 +67,10 @@ export default class Marker extends Editor<ShapeType> {
             let lastEntity = activeShapePoints.pop();
 
             let position = window2Proj(this.viewer, event.position);
-            if (lastEntity && position)
+            if (lastEntity && position) {
+                this.onPopPoint?.call(this, position);
                 updateFloatingPoint(position);
+            }
         }, ScreenSpaceEventType.RIGHT_CLICK)
 
         function updateFloatingPoint(position: Cartesian3) {
@@ -78,6 +82,7 @@ export default class Marker extends Editor<ShapeType> {
 
         //鼠标左键双击 -> 完成标记
         this.handler.setInputAction((event: any) => {
+            activeShapePoints.pop();
             activeShapePoints.pop();
             if (activeShapePoints.length) {
                 let entity = this.drawShape(type, activeShapePoints);
