@@ -1,6 +1,6 @@
 {
   "name": "jas-cesium-libs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist_libs/index.js",
   "license": "UNLICENSED",
   "scripts": {
