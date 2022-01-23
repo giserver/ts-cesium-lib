@@ -1,23 +1,23 @@
 import { CallbackProperty, Cartesian3, Color, Entity, HeightReference, JulianDate, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, MarkStyle, ShapeType } from "..";
+import { FeatureBase, EditorStyle, ShapeType } from "..";
 import { MeasureMode } from "../DataType";
 
 export default abstract class Editor<T extends ShapeType | MeasureMode> extends FeatureBase {
-    protected currentMode : T | undefined;
-    protected readonly handler : ScreenSpaceEventHandler;
-    
+    protected currentMode: T | undefined;
+    protected readonly handler: ScreenSpaceEventHandler;
+
     /**
     * 标记样式
     *
-    * @type {MarkStyle}
+    * @type {EditorStyle}
     * @memberof Marker
     */
-     public readonly style: MarkStyle;
-    
-    constructor(viewer: Viewer) {
+    public readonly style: EditorStyle;
+
+    constructor(viewer: Viewer, style: EditorStyle | undefined) {
         super(viewer);
         this.handler = viewer.screenSpaceEventHandler;
-        this.style = {
+        this.style = style || {
             point_Color: "#ffffff",
             point_PixelSize: 5,
             line_Width: 5,
@@ -33,38 +33,38 @@ export default abstract class Editor<T extends ShapeType | MeasureMode> extends 
     protected abstract onStart(mode: T): void;
     protected abstract onStop(): void;
 
-    public start(mode:T){
+    public start(mode: T) {
         this.setCursorStyle('CrossHair');
         this.currentMode = mode;
         this.onStart(mode);
     }
 
-    public stop(){
+    public stop() {
         //设置默认光标
         this.setCursorStyle('Default');
         //关闭深度监测
         this.viewer.scene.globe.depthTestAgainstTerrain = false;
 
         const handler = this.handler;
-         //删除所有输入事件
-         handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-         handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
-         handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
-         handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+        //删除所有输入事件
+        handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+        handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
+        handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
+        handler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
-         this.onStop();
+        this.onStop();
     }
 
-     /**
-     * 绘制形状
-     *
-     * @private
-     * @param {ShapeType} shapetype 形状类型
-     * @param {*} position 形状点位
-     * @return {*}  {Entity}
-     * @memberof Mark
-     */
-      protected drawShape(shapetype: ShapeType, position: any): Entity {
+    /**
+    * 绘制形状
+    *
+    * @private
+    * @param {ShapeType} shapetype 形状类型
+    * @param {*} position 形状点位
+    * @return {*}  {Entity}
+    * @memberof Mark
+    */
+    protected drawShape(shapetype: ShapeType, position: any): Entity {
         switch (shapetype) {
             case 'Point':
                 return this.viewer.entities.add({

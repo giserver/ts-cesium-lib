@@ -1,5 +1,5 @@
 import { CallbackProperty, Cartesian3, ConstantPositionProperty, Entity, PolygonHierarchy, ScreenSpaceEventType, Viewer } from "cesium";
-import { ShapeType } from "..";
+import { EditorStyle, ShapeType } from "..";
 import { window2Proj } from "../Utils";
 import Editor from "./Editor";
 
@@ -10,8 +10,8 @@ export default class Marker extends Editor<ShapeType> {
     public onPushPoint?: (point: Cartesian3) => void;
     public onPopPoint?: (point: Cartesian3) => void;
 
-    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void) {
-        super(viewer);
+    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void, style: EditorStyle | undefined = undefined) {
+        super(viewer, style);
         this.onEntitySave = onEntitySave;
     }
 

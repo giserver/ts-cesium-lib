@@ -6,18 +6,18 @@ const MEASURE_DEFINE_NAME = "MEASURE_DEFINE_NAME"
 /**
  * 测量功能
  */
-export default class Measure extends Editor<MeasureMode> {
+export default class Measurer extends Editor<MeasureMode> {
     private marker: Marker;
     private areaLable: Entity | undefined;  //面积显示标注
     private linePoints: Array<Entity> | undefined; //线测量标注
 
     constructor(viewer: Viewer) {
-        super(viewer);
+        super(viewer,undefined);
         this.marker = new Marker(viewer, entity => {
             entity.name = MEASURE_DEFINE_NAME;
             this.areaLable = undefined;
             this.linePoints = undefined;
-        });
+        },this.style);
 
         this.marker.onActivityShapeChange = this.handleActivityShapeChange();
         this.marker.onPushPoint = this.handleMakerPushPoint();
