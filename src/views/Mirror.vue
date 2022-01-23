@@ -28,7 +28,7 @@ const container_slave = "container_slave";
 
 let viewer_master = ref<Viewer>();
 let viewer_slave = ref<Viewer>();
-let marker = ref<Measurer>();
+let marker = ref<Marker>();
 
 onMounted(() => {
     viewer_master.value = createViewer(container_master);
@@ -37,9 +37,9 @@ onMounted(() => {
     new Mirror(viewer_master.value,viewer_slave.value)
 
     //marker.value = new Marker(viewer_master.value,entity=>viewer_slave.value?.entities.add(entity));
-    marker.value = new Measurer(viewer_master.value);
+    marker.value = new Marker(viewer_master.value);
     marker.value.start("Line");
-    marker.value.style.line_MaterialColor = "#ffff00"
+    marker.value.style.line_MaterialColor = "#ff0000"
 })
 
 </script>
