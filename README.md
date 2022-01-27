@@ -10,9 +10,9 @@
 
 ``` bash
 
-git clone https://github.com/cocaine-coder/ts-cesium-demo.git
+git clone https://github.com/ts-gis/ts-cesium-lib.git
 
-cd ts-cesium-demo
+cd ts-cesium-lib
 
 yarn # 或者 npm install
 
