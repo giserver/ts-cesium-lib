@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
-import Home from './views/Home.vue'
+import HomeVue from './views/Home.vue';
+import LimitCamera from './views/LimitCamera.vue'
 import Map from './views/Map.vue';
 import Marker from './views/Marker.vue';
 import Mirror from './views/Mirror.vue';
@@ -13,8 +14,13 @@ import DataShow from './views/DataShow.vue';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
+    name: 'HomeVue',
+    component: HomeVue,
+  },
+  {
+    path: '/limitcamera',
+    name: 'LimitCamera',
+    component: LimitCamera,
   },
   {
     path: '/map',

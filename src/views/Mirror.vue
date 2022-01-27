@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { Viewer } from 'cesium';
 import { onMounted, ref } from 'vue'
-import { createViewer, Marker,Measure, Mirror} from '../../libs';
+import { createViewer, Marker, Mirror} from '../../libs';
 import SwitchMap from '../components/SwitchMap.vue';
 import DrawTool from '../components/DrawTool.vue';
 
@@ -27,17 +27,14 @@ const container_slave = "container_slave";
 
 let viewer_master = ref<Viewer>();
 let viewer_slave = ref<Viewer>();
-let marker = ref<Measure>();
+let marker = ref<Marker>();
 
 onMounted(() => {
     viewer_master.value = createViewer(container_master);
     viewer_slave.value = createViewer(container_slave);
 
     new Mirror(viewer_master.value,viewer_slave.value)
-
-    //marker.value = new Marker(viewer_master.value,entity=>viewer_slave.value?.entities.add(entity));
-    marker.value = new Measure(viewer_master.value);
-    marker.value.start("Polygon");
+    marker.value = new Marker(viewer_master.value,(type,entity)=>viewer_slave.value?.entities.add(entity));
 })
 
 </script>

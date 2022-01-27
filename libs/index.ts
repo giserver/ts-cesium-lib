@@ -2,7 +2,7 @@ import FeatureBase from './FeatureBase';
 
 import Editor from './editor/Editor';
 import Marker from './editor/Marker';
-import Measure from './editor/Measure';
+import Measurer from './editor/Measurer';
 
 import Mirror from './show/Mirror';
 import Weather from './show/Weather';
@@ -24,14 +24,14 @@ import {
     CursorStyle,
     SpaceType,
     WeatherType,
-    MarkStyle
+    EditorStyle
 } from './DataType'
 
 export {
     FeatureBase,
     Editor,
     Marker,
-    Measure,
+    Measurer,
     Weather,
     Mirror,
     SelfSpin,
@@ -55,7 +55,7 @@ export type {
     CursorStyle,
     SpaceType,
     WeatherType,
-    MarkStyle,
+    EditorStyle,
     CrsType,
     CustomProviderStyle
 }

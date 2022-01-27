@@ -1,17 +1,17 @@
 import { CallbackProperty, Cartesian3, ConstantPositionProperty, Entity, PolygonHierarchy, ScreenSpaceEventType, Viewer } from "cesium";
-import { ShapeType } from "..";
+import { ShapeType, EditorStyle } from "..";
 import { window2Proj } from "../Utils";
 import Editor from "./Editor";
 
 export default class Marker extends Editor<ShapeType> {
 
-    private onEntitySave?: (entity: Entity) => void
+    private onEntitySave?: (type: ShapeType, entity: Entity) => void
     public onActivityShapeChange?: (mode: ShapeType, points: Array<Cartesian3>) => void
     public onPushPoint?: (point: Cartesian3) => void;
     public onPopPoint?: (point: Cartesian3) => void;
 
-    constructor(viewer: Viewer, onEntitySave?: (entity: Entity) => void) {
-        super(viewer);
+    constructor(viewer: Viewer, onEntitySave?: (type: ShapeType, entity: Entity) => void, style?: EditorStyle) {
+        super(viewer, style);
         this.onEntitySave = onEntitySave;
     }
 
@@ -33,7 +33,7 @@ export default class Marker extends Editor<ShapeType> {
                 //如果标记类型是Point 第一个点就返回
                 if (type === 'Point') {
                     const entity = this.drawShape('Point', position);
-                    this.onEntitySave?.call(this, entity);
+                    this.onEntitySave?.call(this, type, entity);
                     return;
                 }
 
@@ -86,7 +86,7 @@ export default class Marker extends Editor<ShapeType> {
             activeShapePoints.pop();
             if (activeShapePoints.length) {
                 let entity = this.drawShape(type, activeShapePoints);
-                this.onEntitySave?.call(this, entity);
+                this.onEntitySave?.call(this, type, entity);
             }
 
             //释放资源

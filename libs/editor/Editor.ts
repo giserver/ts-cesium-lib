@@ -1,5 +1,5 @@
 import { CallbackProperty, Cartesian3, Color, Entity, HeightReference, JulianDate, PolylineGlowMaterialProperty, PolylineGraphics, ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer } from "cesium";
-import { FeatureBase, MarkStyle, ShapeType } from "..";
+import { FeatureBase, EditorStyle, ShapeType } from "..";
 import { MeasureMode } from "../DataType";
 
 export default abstract class Editor<T extends ShapeType | MeasureMode> extends FeatureBase {
@@ -9,15 +9,15 @@ export default abstract class Editor<T extends ShapeType | MeasureMode> extends 
     /**
     * 标记样式
     *
-    * @type {MarkStyle}
+    * @type {EditorStyle}
     * @memberof Marker
     */
-     public readonly style: MarkStyle;
+     public readonly style: EditorStyle;
     
-    constructor(viewer: Viewer) {
+    constructor(viewer: Viewer, style?: EditorStyle) {
         super(viewer);
         this.handler = viewer.screenSpaceEventHandler;
-        this.style = {
+        this.style = style || {
             point_Color: "#ffffff",
             point_PixelSize: 5,
             line_Width: 5,

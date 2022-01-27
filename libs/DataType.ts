@@ -23,7 +23,7 @@ export type SpaceType = 'D3' | 'D2' | 'H';
  */
 export type WeatherType = 'None' | 'Snow' | 'Rain' | 'Foggy';
 
-export interface MarkStyle {
+export interface EditorStyle {
    point_PixelSize: number;
    point_Color: string;
 
