@@ -10,6 +10,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "md-editor-v3": "^1.9.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.9.3",

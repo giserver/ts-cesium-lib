@@ -13,7 +13,7 @@ import DataShow from './views/DataShow.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/',
+    path: '/home',
     name: 'HomeVue',
     component: HomeVue,
   },
@@ -62,7 +62,7 @@ const routes: Array<RouteRecordRaw> = [
     name:"DataShow",
     component:DataShow
   },
-  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/' },
+  { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/home' },
 ]
 
 
