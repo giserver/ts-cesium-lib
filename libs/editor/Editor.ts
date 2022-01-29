@@ -12,9 +12,9 @@ export default abstract class Editor<T extends ShapeType | MeasureMode> extends 
     * @type {EditorStyle}
     * @memberof Marker
     */
-    public readonly style: EditorStyle;
-
-    constructor(viewer: Viewer, style: EditorStyle | undefined) {
+     public readonly style: EditorStyle;
+    
+    constructor(viewer: Viewer, style?: EditorStyle) {
         super(viewer);
         this.handler = viewer.screenSpaceEventHandler;
         this.style = style || {

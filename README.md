@@ -4,37 +4,15 @@
 
 项目旨在对cesium常用功能`无侵入`、`模块化`封装，避免不同开发框架下徒劳增加学习成本
 
-## 功能
-
-- [标记](./libs/editor/Marker.ts)
-
-    - 支持点、线、面的绘制
-    - 支持颜色、线性修改
-    - 支持开启\关闭测量模式
-
-- [镜像](./libs/show/Mirror.ts)
-- [自转](./libs/show/SelfSpin.ts)
-- [动态抽稀](./libs/show/Thinning.ts)
-
-    - 支持自定义抽稀系数
-    - 支持自定义抽稀实体获取回调
-
-- [天气](./libs/show/Weather.ts)
-
-    - 支持雪天、雨天、雾天
-
-- [选择实体](./libs/show/EntityPicker.ts)
-- 开发中 ...
-
 ## 使用
 
 ### demo 运行
 
 ``` bash
 
-git clone https://github.com/cocaine-coder/ts-cesium-demo.git
+git clone https://github.com/ts-gis/ts-cesium-lib.git
 
-cd ts-cesium-demo
+cd ts-cesium-lib
 
 yarn # 或者 npm install
 
@@ -54,7 +32,7 @@ yarn dev # 或者 npm run dev
 
 ## api 使用
 
-- `工具篇`
+- `基础`
 
 ``` ts
 import {createViewer,setMaxPitch,removeEntityByName,window2Proj} from 'jas-cesium-libs'
@@ -67,14 +45,14 @@ setMaxPitch(viewer, -0.3);
 
 // 根据实体名 删除viewer.entities 中的元素
 // 注 ：之后修改为 EntityCollection 替换 Viewer 类型
-removeEntityByName(viewer,"{{entity-name}}");
+removeEntityByName(viewer.entities ,"{{entity-name}}");
 
 // 屏幕点转化为投影坐标
 const point = {x:1,y:2};
 window2Proj(viewer,point);
 ```
 
-- `标记功能`
+- `标记`
 
 ``` ts
 import {createViewer, Marker} from 'jas-cesium-libs'
@@ -96,6 +74,21 @@ marker.stop();
 
 ```
 
+- `测量`
+
+    *用法和标记功能类似，都实现了[Editor](./libs/editor/Editor.ts)抽象类*
+``` ts
+import {createViewer, Measurer} from 'jas-cesium-libs'
+
+const viewer = createViewer("{{div-id}}");
+const measurer = new Measurer(viewer);
+
+// 修改样式
+marker.style.point_Color = "#ffff00";
+marker.start('Point'); // or : .start('Line');  .start('Polygon');
+marker.stop();
+```
+
 - `镜像`
 
 ``` ts
@@ -109,5 +102,64 @@ const viewer_slave = createViewer("{{div-id-slave}}");
 const mirror = new Mirror(viewer_master,viewer_slave); // or : new Mirror("{{div-id-master}}","{{div-id-slave}}");
 
 // 获取左右两个viewer
-const {master1,slave1} = this.getViewers();
+const {master,slave} = this.getViewers();
+```
+
+- `选择Entity`
+
+``` ts
+import {createViewer, EntityPicker} from 'jas-cesium-libs'
+
+const viewer = createViewer("{{div-id}}");
+const picker = new EntityPicker(viewer);
+picker.start((entity, position) => {
+    // todo whth entity or position
+});
+
+```
+
+- `popup 弹出框`
+
+    *需要配合 EntityPicker 使用*
+
+``` ts
+import {createViewer, Popup, EntityPicker} from 'jas-cesium-libs'
+
+const viewer = createViewer("{{div-id}}");
+const picker = new EntityPicker(viewer);
+
+// 创建弹出框 默认使用模板内置模板嵌套
+// 如果在外层自定义封装popup div样式，则自行挂载popup关闭事件，执行picker.close();
+const popup = new Popup(viewer);
+picker.start((entity, position) => {
+    const element = document.createElement("div");
+    element.innerHTML = parseData2Html(entity.properties?.getValue(JulianDate.now()));
+    popup.show(position, element);
+});
+
+function parseData2Html(data: any) {
+    return `<div>名称 : ${data.name}</div>
+            <div>描述 : ${data.description}</div>
+            <div>数量 : ${data.count}</div>
+            <div>类型 : ${data.type}</div>
+            <div>建成时间 : ${data.create_time}</div>
+            <div>高度 : ${data.height}</div>
+            <div>需要重建 : ${data.need_rebuild}</div>`
+```
+
+- `entity 抽稀`
+
+    *用于渲染lable或其他地理描述展示时，对数据进行抽稀防止重叠看不清*
+
+``` ts
+import {createViewer, Thinning} from 'jas-cesium-libs'
+
+const viewer = createViewer("{{div-id}}");
+let thinning = new Thinning()
+    .setPointsFunc(viewer=>viewer.entities)
+    .setLimitXY(15,15)
+    .start();
+
+// 停止抽稀
+// thinning.clear();
 ```

@@ -27,6 +27,10 @@ export const routerGroups: Array<RouterGroup> = [{
     },
     items: [
         {
+            name: "相机限制",
+            href: "/limitcamera"
+        },
+        {
             name: "底图加载",
             href: "/map"
         },
@@ -44,10 +48,6 @@ export const routerGroups: Array<RouterGroup> = [{
         {
             name: "点线面绘制",
             href: "/marker"
-        },
-        {
-            name: "顶点工具",
-            href: "/vertextool"
         }
     ]
 }, {

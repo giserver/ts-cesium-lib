@@ -1,33 +1,23 @@
-<template>
-    <div id="container"></div>
-</template>
-
 <script setup lang="ts">
-import { Cartesian3, Cesium3DTileset } from 'cesium';
-import { onMounted } from 'vue'
-import { createViewer } from '../../libs';
+import { onMounted, ref } from 'vue';
+import Editor from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
+
+const text = ref("");
 
 onMounted(() => {
-    let viewer = createViewer("container");
-    let tile = new Cesium3DTileset({
-        url: "https://szshsurvey.com/tiles/lyc/moxing/lyc_mx1/tileset.json"
-    });
-    viewer.scene.primitives.add(tile);
-    viewer.scene.primitives.add(new Cesium3DTileset({
-        url: 'https://szshsurvey.com/tiles/lyc/moxing/lyc_mx2/tileset.json'
-    }))
-
-    viewer.camera.flyTo({
-        destination: Cartesian3.fromDegrees(120.521552,31.253368, 500)
+  fetch("https://raw.githubusercontent.com/ts-gis/ts-cesium-lib/main/README.md", { method: "GET" }).then(res => {
+    res.text().then(val => {
+      text.value = val;
     })
-    viewer.scene.screenSpaceCameraController.maximumZoomDistance = 500
+  })
 })
 
 </script>
 
-<style scoped>
-#container {
-    height: 100vh;
-    width: 100%;
-}
+<template>
+  <editor v-model="text" theme="light" previewOnly style="padding: 20px;"></editor>
+</template>
+
+<style>
 </style>
